@@ -1,6 +1,7 @@
 import { ActionIcon, Badge, Button, Collapse, Group, Modal, Stack, Text, Tooltip } from "@mantine/core";
 import { IconBulb, IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Level } from "@code-royale/content";
 import { StarIcon } from "./Icons";
 
@@ -11,11 +12,12 @@ interface Props {
   onInsert: (code: string) => void;
 }
 
-export function levelColor(level: Level) {
+export function levelColor(level: Pick<Level, "color">) {
   return `var(--mantine-color-${level.color}-6)`;
 }
 
 export function MissionCard({ level, stars, bestWave, onInsert }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(true);
   const [hintsOpen, setHintsOpen] = useState(false);
   const [revealed, setRevealed] = useState(1);
@@ -44,7 +46,7 @@ export function MissionCard({ level, stars, bestWave, onInsert }: Props) {
             <StarIcon key={i} on={i < stars} size={22} />
           ))}
         </Group>
-        <ActionIcon variant="subtle" color="gray" aria-label={open ? "Hide mission" : "Show mission"}>
+        <ActionIcon variant="subtle" color="gray" aria-label={open ? t("mission.hide") : t("mission.show")}>
           {open ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
         </ActionIcon>
       </Group>
@@ -55,12 +57,12 @@ export function MissionCard({ level, stars, bestWave, onInsert }: Props) {
             {level.story}
           </Text>
           <Text size="sm" lh={1.45} c="violet.2">
-            🧠 <b>Learn:</b> {level.learn}
+            🧠 <b>{t("mission.learn")}</b> {level.learn}
           </Text>
           {level.newApi.length > 0 && (
             <Group gap={6}>
               <Text size="xs" c="dimmed">
-                New:
+                {t("mission.new")}
               </Text>
               {level.newApi.map((api) => (
                 <code key={api} className="cr-doc-usage" style={{ fontSize: 12 }}>
@@ -81,11 +83,11 @@ export function MissionCard({ level, stars, bestWave, onInsert }: Props) {
               ))}
               {bestWave !== undefined && bestWave > 0 && (
                 <Text size="sm" c="pink.3">
-                  🏆 Your record: {bestWave} waves
+                  {t("mission.record", { count: bestWave })}
                 </Text>
               )}
             </Stack>
-            <Tooltip label="Stuck? Get a hint!" withArrow>
+            <Tooltip label={t("mission.hintTooltip")} withArrow>
               <Button
                 size="xs"
                 variant="light"
@@ -96,21 +98,21 @@ export function MissionCard({ level, stars, bestWave, onInsert }: Props) {
                   setHintsOpen(true);
                 }}
               >
-                Hints
+                {t("mission.hints")}
               </Button>
             </Tooltip>
           </Group>
         </Stack>
       </Collapse>
 
-      <Modal opened={hintsOpen} onClose={() => setHintsOpen(false)} title={<Text fw={700} size="lg">💡 Hints for “{level.title}”</Text>} size="lg" centered>
+      <Modal opened={hintsOpen} onClose={() => setHintsOpen(false)} title={<Text fw={700} size="lg">{t("mission.hintsTitle", { title: level.title })}</Text>} size="lg" centered>
         <Stack gap="md">
           {level.hints.slice(0, revealed).map((h, i) => (
             <div key={i} className="cr-panel" style={{ padding: 14 }}>
               <Group justify="space-between" mb={6}>
                 <Text fw={700}>
                   <Badge mr={8} color="yellow" variant="light">
-                    Hint {i + 1}
+                    {t("mission.hint", { number: i + 1 })}
                   </Badge>
                   {h.title}
                 </Text>
@@ -130,7 +132,7 @@ export function MissionCard({ level, stars, bestWave, onInsert }: Props) {
                       setHintsOpen(false);
                     }}
                   >
-                    ✨ Put this in my code
+                    {t("mission.insert")}
                   </Button>
                 </>
               )}
@@ -138,11 +140,11 @@ export function MissionCard({ level, stars, bestWave, onInsert }: Props) {
           ))}
           {revealed < level.hints.length ? (
             <Button variant="subtle" color="yellow" onClick={() => setRevealed((r) => r + 1)}>
-              Show another hint ({level.hints.length - revealed} left)
+              {t("mission.moreHints", { count: level.hints.length - revealed })}
             </Button>
           ) : (
             <Text size="sm" c="dimmed" ta="center">
-              That's all the hints! You've got this, Commander. 💪
+              {t("mission.noMoreHints")}
             </Text>
           )}
         </Stack>

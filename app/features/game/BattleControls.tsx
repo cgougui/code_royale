@@ -15,15 +15,13 @@ import {
   IconRefresh,
 } from "@tabler/icons-react";
 import { useMemo } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import type { Level } from "@code-royale/content";
-import {
-  UNIT_STATS,
-  type SpawnSpec,
-  type Team,
-  type UnitType,
-} from "@code-royale/engine";
+import type { SpawnSpec, Team, UnitType } from "@code-royale/engine";
 import type { BattleReplay } from "~/domain/battle-replay";
 import { UnitIcon } from "~/components/Icons";
+import { useContent } from "~/i18n";
+import type { DebugBlocked } from "./use-game-controller";
 
 interface Props {
   level: Level;
@@ -33,7 +31,7 @@ interface Props {
   paused: boolean;
   speed: number;
   fog: boolean;
-  debugBlocked: string | null;
+  debugBlocked: DebugBlocked | null;
   onTogglePause(): void;
   onSpeedChange(speed: number): void;
   onSkip(): void;
@@ -60,13 +58,14 @@ export function BattleControls({
   onCloseDebugger,
   onFogChange,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="cr-panel cr-battlebar">
       {debugging ? (
         <>
           <IconBug size={18} color="#fbbf24" />
           <Text size="sm" style={{ flex: 1 }}>
-            Battle on hold. <b>Click a blue fighter</b> to debug its code.
+            <Trans i18nKey="battle.onHold" components={{ b: <b /> }} />
           </Text>
           <Button
             size="xs"
@@ -74,17 +73,20 @@ export function BattleControls({
             color="gray"
             onClick={onCloseDebugger}
           >
-            Back to the battle
+            {t("battle.backToBattle")}
           </Button>
         </>
       ) : battling ? (
         <>
-          <Tooltip label={paused ? "Play" : "Pause"} withArrow>
+          <Tooltip
+            label={paused ? t("battle.play") : t("battle.pause")}
+            withArrow
+          >
             <ActionIcon
               variant="light"
               size="lg"
               onClick={() => onTogglePause()}
-              aria-label="Pause"
+              aria-label={paused ? t("battle.play") : t("battle.pause")}
             >
               {paused ? (
                 <IconPlayerPlay size={18} />
@@ -103,13 +105,13 @@ export function BattleControls({
               { label: "4×", value: "4" },
             ]}
           />
-          <Tooltip label="Skip to the end" withArrow>
+          <Tooltip label={t("battle.skip")} withArrow>
             <ActionIcon
               variant="light"
               size="lg"
               onClick={onSkip}
               disabled={!run?.done}
-              aria-label="Skip"
+              aria-label={t("battle.skipLabel")}
             >
               <IconPlayerSkipForward size={18} />
             </ActionIcon>
@@ -117,7 +119,7 @@ export function BattleControls({
           <DebugButton blocked={debugBlocked} onClick={onDebug} />
           <span style={{ flex: 1 }} />
           <Text size="sm" c="dimmed" visibleFrom="lg">
-            Hover a fighter to see what it can see
+            {t("battle.hoverHint")}
           </Text>
         </>
       ) : (
@@ -127,12 +129,12 @@ export function BattleControls({
         multiline
         w={260}
         withArrow
-        label="ON: you only see what your fighters can see, like a real commander. OFF: spectator mode, see everything (even enemies hiding in bushes)."
+        label={t("battle.fogTooltip")}
       >
         <Switch
           checked={fog}
           onChange={(e) => onFogChange(e.currentTarget.checked)}
-          label="🌫️ Fog"
+          label={t("battle.fog")}
           size="sm"
         />
       </Tooltip>
@@ -140,12 +142,12 @@ export function BattleControls({
         <DebugButton blocked={debugBlocked} onClick={onDebug} />
       )}
       {!battling && !debugging && run && (
-        <Tooltip label="Watch the last battle again" withArrow>
+        <Tooltip label={t("battle.replay")} withArrow>
           <ActionIcon
             variant="light"
             size="lg"
             onClick={onReplay}
-            aria-label="Replay"
+            aria-label={t("battle.replayLabel")}
           >
             <IconRefresh size={18} />
           </ActionIcon>
@@ -159,14 +161,14 @@ function DebugButton({
   blocked,
   onClick,
 }: {
-  blocked: string | null;
+  blocked: DebugBlocked | null;
   onClick: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Tooltip
       label={
-        blocked ??
-        "Pause and run your code step by step, to see what your fighters think (and why!)"
+        blocked ? t(`debugBlocked.${blocked}`) : t("battle.debugTooltip")
       }
       withArrow
       multiline
@@ -180,7 +182,7 @@ function DebugButton({
         onClick={onClick}
         disabled={!!blocked}
       >
-        Debug
+        {t("battle.debug")}
       </Button>
     </Tooltip>
   );
@@ -193,6 +195,8 @@ function countTypes(specs: SpawnSpec[]) {
 }
 
 function Roster({ blue, red }: { blue: SpawnSpec[]; red: SpawnSpec[] }) {
+  const { t } = useTranslation();
+  const { units } = useContent();
   const groups = useMemo(
     () => [
       { team: "blue" as Team, units: countTypes(blue) },
@@ -210,7 +214,7 @@ function Roster({ blue, red }: { blue: SpawnSpec[]; red: SpawnSpec[] }) {
             c={g.team === "blue" ? "blue.3" : "red.3"}
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
           >
-            {g.team === "blue" ? "YOU" : "RED"}
+            {g.team === "blue" ? t("battle.you") : t("battle.red")}
           </Text>
           {g.units.map(([type, n]) => (
             <Tooltip
@@ -220,10 +224,9 @@ function Roster({ blue, red }: { blue: SpawnSpec[]; red: SpawnSpec[] }) {
               withArrow
               label={
                 <span>
-                  <b>{UNIT_STATS[type].label}</b>:{" "}
-                  {UNIT_STATS[type].description}
-                  <br />⭐ {UNIT_STATS[type].special.name}:{" "}
-                  {UNIT_STATS[type].special.description}
+                  <b>{units[type].name}</b>: {units[type].description}
+                  <br />⭐ {units[type].special.name}:{" "}
+                  {units[type].special.description}
                 </span>
               }
             >
@@ -239,7 +242,7 @@ function Roster({ blue, red }: { blue: SpawnSpec[]; red: SpawnSpec[] }) {
                 <UnitIcon type={type} team={g.team} size={38} />
                 <div style={{ lineHeight: 1.1 }}>
                   <Text size="sm" fw={700}>
-                    {n}× {UNIT_STATS[type].label}
+                    {t("battle.count", { count: n, name: units[type].name })}
                   </Text>
                   <Text size="xs" c="dimmed" ff="monospace">
                     "{type}"

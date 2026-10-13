@@ -35,7 +35,7 @@ function applyEffects(
         break;
       case "banner":
         renderer.showBanner(
-          effect.text,
+          renderer.text.outcome[effect.outcome],
           effect.color,
           undefined,
           effect.duration,
@@ -51,12 +51,15 @@ function applyEffects(
   }
 }
 
+/** The countdown before a battle: numbers, then a shout (worded by the UI). */
+export type Countdown = "3" | "2" | "1" | "fight" | "go";
+
 /** Schedules browser animation and adapts pure playback updates to the renderer. */
 export function useArenaPlayback(
   rendererRef: RefObject<ArenaRenderer | null>,
   input: ArenaPlaybackProps,
 ) {
-  const [count, setCount] = useState<string | null>(null);
+  const [count, setCount] = useState<Countdown | null>(null);
   const playback = useRef(new BattlePlayback());
   const preview = useMemo(() => {
     const battle = new Battle(toBattleSetup(input.level, "", 1));
@@ -73,10 +76,10 @@ export function useArenaPlayback(
     playback.current.reset(!!input.run);
     setCount(null);
     if (!input.run) return;
-    const steps =
+    const steps: Countdown[] =
       input.replayKey > 0 && input.run.done
-        ? ["GO!"]
-        : ["3", "2", "1", "FIGHT!"];
+        ? ["go"]
+        : ["3", "2", "1", "fight"];
     const timers = steps.map((label, index) =>
       setTimeout(() => {
         setCount(label);

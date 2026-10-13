@@ -26,7 +26,7 @@ export function frames(s: BattleSetup): Frame[] {
 export function stepped(s: BattleSetup, n: number): Battle {
   const b = new Battle(s);
   const err = b.prepare();
-  if (err) throw new Error(err.message);
+  if (err) throw new Error(JSON.stringify(err.message));
   for (let i = 0; i < n && !b.result; i++) b.step();
   return b;
 }

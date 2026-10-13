@@ -9,5 +9,8 @@
   },
   "dependencies": {
     "@code-royale/engine": "*"
+  },
+  "devDependencies": {
+    "acorn": "^8.19.0"
   }
 }

@@ -1,4 +1,11 @@
-import { LEVELS, starter, starsFor, type Level } from "@code-royale/content";
+import {
+  contentFor,
+  isStarterCode,
+  LEVELS,
+  starsFor,
+  type LevelSpec,
+  type Locale,
+} from "@code-royale/content";
 import type { BattleResult } from "@code-royale/engine";
 
 export interface Progress {
@@ -6,7 +13,8 @@ export interface Progress {
   code: Record<string, string>;
   bestWave: number;
   current: string;
-  lastCode: string;
+  /** The code written last, on any level (null until the player writes some). */
+  lastCode: string | null;
   muted: boolean;
   seenIntro: boolean;
   battles: number;
@@ -24,7 +32,7 @@ export function defaultProgress(): Progress {
     code: {},
     bestWave: 0,
     current: LEVELS[0].id,
-    lastCode: starter.code,
+    lastCode: null,
     muted: false,
     seenIntro: false,
     battles: 0,
@@ -36,9 +44,19 @@ export function isUnlocked(p: Progress, levelId: string): boolean {
   return i === 0 || (i > 0 && (p.stars[LEVELS[i - 1].id] ?? 0) > 0);
 }
 
-/** Code shown when opening a level: what the player wrote there, or their latest code. */
-export function codeFor(p: Progress, levelId: string): string {
-  return p.code[levelId] ?? p.lastCode;
+/**
+ * Code shown when opening a level: what the player wrote there, or their latest code.
+ * The untouched starter code is shown in the player's language, whatever language it was saved in.
+ */
+export function codeFor(p: Progress, levelId: string, locale: Locale): string {
+  return localizeCode(p.code[levelId] ?? p.lastCode, locale);
+}
+
+/** `code` itself, unless it is missing or is the untouched starter code: then the starter code in `locale`. */
+export function localizeCode(code: string | null, locale: Locale): string {
+  return code === null || isStarterCode(code)
+    ? contentFor(locale).starter.code
+    : code;
 }
 
 export function totalStars(p: Progress): number {
@@ -56,7 +74,7 @@ export function rememberCode(
 /** Award a completed battle. Playback and storage are deliberately absent here. */
 export function completeBattle(
   p: Progress,
-  level: Level,
+  level: LevelSpec,
   res: BattleResult,
 ): { progress: Progress; outcome: BattleOutcome } {
   const earned = starsFor(level, res);

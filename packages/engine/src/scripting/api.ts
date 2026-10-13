@@ -6,7 +6,7 @@
  * system carries it out afterwards.
  */
 import type { Point } from "../math/geometry";
-import type { ItemKind, Team, UnitType } from "../protocol";
+import { message, type ItemKind, type Message, type Team, type UnitType } from "../protocol";
 import type { Unit, World } from "../world/state";
 import { canSee } from "../world/vision";
 import { formatValue } from "./format";
@@ -15,7 +15,7 @@ import { formatValue } from "./format";
 export interface ScriptHost {
   readonly world: World;
   /** A one-time friendly warning in the player's console. */
-  warn(key: string, text: string): void;
+  warn(warning: Message): void;
   /** A fighter used me.say(). */
   noteSay(u: Unit): void;
 }
@@ -143,11 +143,11 @@ export class Me {
   attack(target: Thing) {
     const t = this.#w.resolveUnit(target);
     if (!t) {
-      if (target && typeof target === "object" && !("id" in target)) this.#h.warn("attack-point", "me.attack() needs a fighter (like me.nearestEnemy()), not a place. To walk somewhere use me.moveTo(x, y).");
+      if (target && typeof target === "object" && !("id" in target)) this.#h.warn(message("warn.attackPoint"));
       return;
     }
     if (t.team === this.team) {
-      this.#h.warn("friendly-fire", "Whoa! You told a fighter to attack someone on YOUR team. I ignored that. 😅");
+      this.#h.warn(message("warn.friendlyFire"));
       return;
     }
     this.#u.intent = { k: "attack", target: t.id };
@@ -180,7 +180,7 @@ export class Me {
   patrol(points: unknown) {
     const pts = Array.isArray(points) ? points.map(toPoint).filter((p): p is Point => !!p) : [];
     if (pts.length === 0) {
-      this.#h.warn("patrol", "me.patrol() needs a list of places, like me.patrol([[200, 150], [200, 450]])");
+      this.#h.warn(message("warn.patrolNeedsPlaces"));
       return;
     }
     this.#u.intent = { k: "patrol", points: pts };
@@ -211,7 +211,7 @@ export class Me {
 
   hide() {
     if (!this.#w.bushes.length) {
-      this.#h.warn("no-bush", "There are no bushes in this arena to hide in! 🌳");
+      this.#h.warn(message("warn.noBush"));
       return;
     }
     this.#u.intent = { k: "hide" };

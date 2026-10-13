@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LEVELS } from "@code-royale/content";
+import { contentFor, LEVELS } from "@code-royale/content";
 import type { BattleResult } from "@code-royale/engine";
 import {
   completeBattle,
@@ -28,7 +28,7 @@ const victory: BattleResult = {
 
 describe("player session", () => {
   it("commits a draft before a quick level change and restores each level's code", () => {
-    let state = playerSession(initialSession(), {
+    let state = playerSession(initialSession("en"), {
       type: "hydrate",
       progress: defaultProgress(),
     });
@@ -39,6 +39,24 @@ describe("player session", () => {
     state = playerSession(state, { type: "pick-level", id: LEVELS[0].id });
     expect(state.code).toBe("first draft");
     expect(state.progress.code[LEVELS[1].id]).toBe("second draft");
+  });
+
+  it("shows untouched starter code in the player's language, but never touches their own code", () => {
+    const en = contentFor("en").starter.code;
+    const fr = contentFor("fr").starter.code;
+    let state = playerSession(initialSession("en"), {
+      type: "hydrate",
+      progress: defaultProgress(),
+    });
+    expect(state.code).toBe(en);
+    state = playerSession(state, { type: "set-locale", locale: "fr" });
+    expect(state.code).toBe(fr);
+    // Other levels open with the starter code in French too.
+    state = playerSession(state, { type: "pick-level", id: LEVELS[1].id });
+    expect(state.code).toBe(fr);
+    state = playerSession(state, { type: "edit", code: "me.explore()" });
+    state = playerSession(state, { type: "set-locale", locale: "en" });
+    expect(state.code).toBe("me.explore()");
   });
 
   it("never reduces earned stars and leaves the original progress intact", () => {

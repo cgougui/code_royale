@@ -7,8 +7,12 @@ import { Decoration, EditorView, gutter, GutterMarker, hoverTooltip, keymap, typ
 import { tags as t } from "@lezer/highlight";
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
-import { GLOBAL_DOCS, ME_DOCS, UNIT_DOCS, type ApiDoc } from "@code-royale/content";
-import { checkSyntax, type TraceStep, type TraceVar } from "@code-royale/engine";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import type { ApiDoc, Content } from "@code-royale/content";
+import { checkSyntax, type Inspected, type TraceStep, type TraceVar } from "@code-royale/engine";
+import type { AppMessage } from "~/domain/messages";
+import { useContent, useFormatInspected, useFormatMessage } from "~/i18n";
 
 export interface CodeEditorHandle {
   insert: (code: string) => void;
@@ -25,7 +29,7 @@ interface Props {
   value: string;
   onChange: (v: string) => void;
   onRun: () => void;
-  runtimeError: { line?: number; message: string } | null;
+  runtimeError: { line?: number; message: AppMessage } | null;
   /** Set while debugging: the code is locked and the current step is highlighted. */
   debug?: EditorDebugInfo | null;
   onBreakpointsChange?: (lines: number[]) => void;
@@ -135,7 +139,15 @@ const currentStep = StateField.define<{ deco: DecorationSet; arrow: RangeSet<Gut
   provide: (f) => EditorView.decorations.from(f, (v) => v.deco),
 });
 
-function debuggerExtensions(vars: () => TraceVar[] | null): Extension[] {
+/** What the editor shows in the player's language. Read through a ref, so the extensions never need rebuilding. */
+interface EditorText {
+  completions: Completions;
+  formatMessage: (m: AppMessage) => string;
+  formatInspected: (v: Inspected) => string;
+  valueTip: (name: string) => string;
+}
+
+function debuggerExtensions(vars: () => TraceVar[] | null, text: () => EditorText): Extension[] {
   return [
     breakpoints,
     currentStep,
@@ -179,11 +191,11 @@ function debuggerExtensions(vars: () => TraceVar[] | null): Extension[] {
           const dom = document.createElement("div");
           dom.className = "cm-var-tip";
           const label = document.createElement("b");
-          label.textContent = `${owner ? `${owner}.` : ""}${name} = `;
-          const text = document.createElement("span");
-          text.className = `cm-var-tip-${value.kind}`;
-          text.textContent = value.text;
-          dom.append(label, text);
+          label.textContent = text().valueTip(`${owner ? `${owner}.` : ""}${name}`);
+          const shown = document.createElement("span");
+          shown.className = `cm-var-tip-${value.kind}`;
+          shown.textContent = text().formatInspected(value);
+          dom.append(label, shown);
           return { dom };
         },
       };
@@ -191,49 +203,62 @@ function debuggerExtensions(vars: () => TraceVar[] | null): Extension[] {
   ];
 }
 
-const ARRAY_DOCS: Completion[] = [
-  { label: "find", type: "method", detail: "list.find(x => ...)", info: "The first one that matches, or undefined." },
-  { label: "filter", type: "method", detail: "list.filter(x => ...)", info: "A new list with only the ones that match." },
-  { label: "some", type: "method", detail: "list.some(x => ...)", info: "true if at least one matches." },
-  { label: "forEach", type: "method", detail: "list.forEach(x => ...)", info: "Do something with each one." },
-  { label: "length", type: "property", detail: "list.length", info: "How many there are." },
-];
-const ARENA_DOCS: Completion[] = [
-  ...["width", "height", "centerX", "centerY"].map((label) => ({ label, type: "property", info: "Arena size" })),
-  { label: "bushes", type: "property", info: "List of bushes to hide in (x, y, radius)" },
-  { label: "rocks", type: "property", info: "List of rocks that block moving and seeing (x, y, radius)" },
-];
+interface Completions {
+  me: Completion[];
+  global: Completion[];
+  unit: Completion[];
+  arrays: Completion[];
+  arena: Completion[];
+}
+
+function buildCompletions(content: Content, t: TFunction): Completions {
+  const c = (key: "find" | "filter" | "some" | "forEach" | "length") => t(`editor.completion.${key}`);
+  return {
+    me: content.meDocs.map((d) => toCompletion(d)),
+    global: [
+      { label: "me", type: "variable", detail: t("editor.completion.me.detail"), info: t("editor.completion.me.info"), boost: 10 },
+      ...content.globalDocs.map((d) => toCompletion(d, 5)),
+    ],
+    unit: content.unitDocs.map((d) => toCompletion(d)),
+    arrays: [
+      { label: "find", type: "method", detail: "list.find(x => ...)", info: c("find") },
+      { label: "filter", type: "method", detail: "list.filter(x => ...)", info: c("filter") },
+      { label: "some", type: "method", detail: "list.some(x => ...)", info: c("some") },
+      { label: "forEach", type: "method", detail: "list.forEach(x => ...)", info: c("forEach") },
+      { label: "length", type: "property", detail: "list.length", info: c("length") },
+    ],
+    arena: [
+      ...["width", "height", "centerX", "centerY"].map((label) => ({ label, type: "property", info: t("editor.completion.arenaSize") })),
+      { label: "bushes", type: "property", info: t("editor.completion.bushes") },
+      { label: "rocks", type: "property", info: t("editor.completion.rocks") },
+    ],
+  };
+}
 
 function toCompletion(d: ApiDoc, boost = 0): Completion {
   const base = { label: d.name, detail: d.usage, info: d.description, boost };
   if (d.kind !== "method" && d.kind !== "function") return { ...base, type: d.kind === "variable" ? "variable" : "property" };
-  const first = d.usage.split("  or  ")[0].replace(/^me\./, "");
+  // Usages list alternatives separated by wide spaces ("me.moveTo(x, y)  or  me.moveTo(thing)"): use the first.
+  const first = d.usage.split(/\s{2,}/)[0].replace(/^me\./, "");
   const snippet = first.replace(/\(([^)]*)\)/, (_, args: string) => (args ? `(${args.split(", ").map((a) => `\${${a}}`).join(", ")})` : "()${}"));
   return snippetCompletion(snippet, { ...base, type: d.kind === "method" ? "method" : "function" });
 }
 
-const ME_COMPLETIONS = ME_DOCS.map((d) => toCompletion(d));
-const GLOBAL_COMPLETIONS = [
-  { label: "me", type: "variable", detail: "your fighter", info: "The fighter running this code. Type me. to see what it can do!", boost: 10 } as Completion,
-  ...GLOBAL_DOCS.map((d) => toCompletion(d, 5)),
-];
-const UNIT_COMPLETIONS = UNIT_DOCS.map((d) => toCompletion(d));
-
-function royaleCompletions(ctx: CompletionContext) {
+function royaleCompletions(ctx: CompletionContext, completions: Completions) {
   const member = ctx.matchBefore(/[\w$]+\.\w*/);
   if (member) {
     const dot = member.text.indexOf(".");
     const obj = member.text.slice(0, dot);
     const from = member.from + dot + 1;
-    if (obj === "me") return { from, options: ME_COMPLETIONS, validFor: /^\w*$/ };
-    if (obj === "enemies" || obj === "allies" || obj === "items") return { from, options: ARRAY_DOCS, validFor: /^\w*$/ };
-    if (obj === "arena") return { from, options: ARENA_DOCS, validFor: /^\w*$/ };
+    if (obj === "me") return { from, options: completions.me, validFor: /^\w*$/ };
+    if (obj === "enemies" || obj === "allies" || obj === "items") return { from, options: completions.arrays, validFor: /^\w*$/ };
+    if (obj === "arena") return { from, options: completions.arena, validFor: /^\w*$/ };
     if (["team", "memory", "Math", "console"].includes(obj)) return null;
-    return { from, options: UNIT_COMPLETIONS, validFor: /^\w*$/ };
+    return { from, options: completions.unit, validFor: /^\w*$/ };
   }
   const word = ctx.matchBefore(/\w+/);
   if (!word || (word.from === word.to && !ctx.explicit)) return null;
-  return { from: word.from, options: GLOBAL_COMPLETIONS, validFor: /^\w*$/ };
+  return { from: word.from, options: completions.global, validFor: /^\w*$/ };
 }
 
 const royaleTheme = EditorView.theme(
@@ -285,6 +310,13 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
   varsRef.current = debug?.vars ?? null;
   const bpRef = useRef(onBreakpointsChange);
   bpRef.current = onBreakpointsChange;
+  const { t } = useTranslation();
+  const content = useContent();
+  const formatMessage = useFormatMessage();
+  const formatInspected = useFormatInspected();
+  const completions = useMemo(() => buildCompletions(content, t), [content, t]);
+  const textRef = useRef<EditorText>(null!);
+  textRef.current = { completions, formatMessage, formatInspected, valueTip: (name) => t("editor.valueTip", { name }) };
   const readOnly = useMemo(() => new Compartment(), []);
 
   useImperativeHandle(ref, () => ({
@@ -313,7 +345,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
   const extensions = useMemo(
     () => [
       javascript(),
-      javascriptLanguage.data.of({ autocomplete: royaleCompletions }),
+      javascriptLanguage.data.of({ autocomplete: (ctx: CompletionContext) => royaleCompletions(ctx, textRef.current.completions) }),
       autocompletion({ activateOnTyping: true, icons: true }),
       syntaxHighlighting(royaleHighlight),
       royaleTheme,
@@ -327,9 +359,10 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
             return { from: l.from, to: Math.max(l.from, l.to) };
           };
           const syntax = checkSyntax(doc.toString());
-          if (syntax?.line) diags.push({ ...lineRange(syntax.line), severity: "error", message: `🤔 ${syntax.message}` });
+          const { formatMessage } = textRef.current;
+          if (syntax?.line) diags.push({ ...lineRange(syntax.line), severity: "error", message: `🤔 ${formatMessage(syntax.message)}` });
           const rt = errRef.current;
-          if (!syntax && rt?.line) diags.push({ ...lineRange(rt.line), severity: "error", message: `💥 ${rt.message}` });
+          if (!syntax && rt?.line) diags.push({ ...lineRange(rt.line), severity: "error", message: `💥 ${formatMessage(rt.message)}` });
           return diags;
         },
         { delay: 400 },
@@ -353,7 +386,10 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
         ]),
       ),
       EditorView.lineWrapping,
-      debuggerExtensions(() => varsRef.current),
+      debuggerExtensions(
+        () => varsRef.current,
+        () => textRef.current,
+      ),
       readOnly.of(EditorState.readOnly.of(false)),
       EditorView.updateListener.of((u) => {
         if (u.startState.field(breakpoints) !== u.state.field(breakpoints)) bpRef.current?.(breakpointLines(u.state));
@@ -376,10 +412,11 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
     view.dispatch({ effects });
   }, [step]);
 
+  // Re-lint when the error or the language changes.
   useEffect(() => {
     const view = cm.current?.view;
     if (view) forceLinting(view);
-  }, [runtimeError]);
+  }, [runtimeError, formatMessage]);
 
   return (
     <CodeMirror

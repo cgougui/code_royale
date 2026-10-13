@@ -3,6 +3,7 @@ import { stepTarget, type StepMove, type Trace } from "@code-royale/engine";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BattleReplay } from "../domain/battle-replay";
 import { blueFightersAt, lastTick } from "../domain/battle-replay";
+import { appMessage, type AppMessage } from "../domain/messages";
 import { requestTrace } from "../runtime/trace-client";
 
 export interface DebugState {
@@ -15,7 +16,7 @@ export interface DebugState {
   /** Waiting for a trace from the worker. */
   busy: boolean;
   /** Why there is no trace, or why a command did nothing. */
-  notice: string | null;
+  notice: AppMessage | null;
 }
 
 export interface Debugger {
@@ -66,6 +67,7 @@ export function useDebugger(
         const reply = await requestTrace(
           {
             levelId: run.levelId,
+            locale: run.locale,
             blueCode: run.code,
             seed: run.seed,
             request: {
@@ -111,7 +113,14 @@ export function useDebugger(
         }
       } catch (e) {
         if (!ctl.signal.aborted)
-          setState((s) => s && { ...s, busy: false, notice: String(e) });
+          setState(
+            (s) =>
+              s && {
+                ...s,
+                busy: false,
+                notice: appMessage("app.unexpected", { detail: String(e) }),
+              },
+          );
       }
     },
     [run],
@@ -141,7 +150,7 @@ export function useDebugger(
           trace: null,
           step: 0,
           busy: false,
-          notice: "None of your fighters is standing at this moment.",
+          notice: appMessage("app.noFighterStanding"),
         });
       } else void load(t, id, "first");
     },
@@ -172,8 +181,7 @@ export function useDebugger(
       if (m === "continue" && bps.current.length === 0) {
         setState({
           ...s,
-          notice:
-            "Click left of a line number to put a 🔴 breakpoint there. Then Continue runs the battle until a fighter reaches it.",
+          notice: appMessage("app.needBreakpoint"),
         });
         return;
       }
@@ -188,7 +196,7 @@ export function useDebugger(
         return;
       }
       if (s.tick >= lastTick(run))
-        return setState({ ...s, notice: "That's the end of the battle! 🏁" });
+        return setState({ ...s, notice: appMessage("app.battleEnd") });
       void load(
         s.tick + 1,
         s.unitId,

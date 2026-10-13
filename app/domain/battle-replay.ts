@@ -1,8 +1,11 @@
+import type { Locale } from "@code-royale/content";
 import type { BattleResult, Frame, UnitInfo } from "@code-royale/engine";
 
 /** Read-only replay data shared by playback, debugging and UI; no worker dependency. */
 export interface BattleReplay {
   readonly levelId: string;
+  /** The language of the red script (its comments and speech bubbles). */
+  readonly locale: Locale;
   readonly code: string;
   readonly seed: number;
   readonly frames: readonly Frame[];

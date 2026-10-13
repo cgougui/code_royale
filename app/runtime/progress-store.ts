@@ -20,7 +20,7 @@ function count(value: unknown): number {
 export function decodeProgress(raw: string): Progress {
   const data = record(JSON.parse(raw));
   const defaults = defaultProgress();
-  const known = new Set(LEVELS.map((level) => level.id));
+  const known = new Set<string>(LEVELS.map((level) => level.id));
   return {
     stars: Object.fromEntries(
       Object.entries(record(data.stars))

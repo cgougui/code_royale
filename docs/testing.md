@@ -18,8 +18,8 @@ Self-contained scenarios built from tiny `BattleSetup`s (no content dependency):
 - **determinism:** same seed → identical frames; different seed → different; script `random()` doesn't perturb the world.
 - **vision:** detection radius, bush detection range, scout eyes, rocks block line of sight, scripts only see spotted
   enemies, shared team vision.
-- **scripting:** syntax error lines, the "never closed" message, compile errors block the battle, runtime errors are
-  reported once with their line, the blind-fighters nudge, the friendly-fire warning.
+- **scripting:** syntax error lines, the "never closed" and other message codes, compile errors block the battle,
+  runtime errors are reported once with their line, the blind-fighters nudge, the friendly-fire warning.
 - **orders:** `moveTo`, `explore`, `escape`, `circle` distance, `hide`, rock avoidance, melee fights resolve.
 - **debugger:** instrumented scripts produce byte-identical battles (a corpus of tricky JavaScript), lines are
   preserved, traces (variables, TDZ, order so far, output, crash line), call depth and step over/out/back,
@@ -28,11 +28,14 @@ Self-contained scenarios built from tiny `BattleSetup`s (no content dependency):
 ## Content tests (`packages/content/test`)
 
 - Unique ids and sequential numbers; every strategy and every hint snippet parses.
-- Mirror-army rule (unless `note`).
+- Mirror-army rule (unless `unevenArmies`).
 - Every level runs with the starter code without the red script throwing.
 - The debugger can trace every level's red script (played as blue).
 - **Golden replays:** an FNV-1a hash of every frame and log of each level played by the starter code (seed 7),
   snapshotted. Any change to rules, systems or levels changes them. Review the diff, then `npx vitest run -u`.
+- **Locales** (`locales.test.ts`): every language has the same hints and strategies as English, with code identical
+  token for token (only comments and texts differ), no empty text, a note for every uneven level, names for named
+  fighters, and fights exactly the same battles as English.
 
 ## Balance tool (`tools/balance.ts`)
 
@@ -50,6 +53,8 @@ targets are listed in [content.md](content.md).
   endless records never regress; invalid saved fields are repaired; storage failures remain harmless.
 - Worker adapters: buffer frames, complete/terminate, detect stuck scripts, refresh watchdogs,
   ignore messages after cancellation, and abort or time out trace requests with resource cleanup.
+- Languages: untouched starter code follows a language change, the player's own code never does; every UI
+  catalog has the English keys, placeholders, markup and the plural forms its language needs (`i18n.test.ts`).
 
 `tools/test` exercises the architecture parser and dependency rules, including side-effect imports,
 inline import types, worker URLs, aliases and sibling paths sharing a directory prefix.

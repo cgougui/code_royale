@@ -1,13 +1,13 @@
 /**
  * Script sandbox: syntax checking (acorn), compilation with `new Function`,
- * error line mapping and kid-friendly error messages.
+ * error line mapping and kid-friendly error messages (as language-neutral `Message`s).
  *
  * Isolation note: compiled scripts can only reach the globals passed as parameters.
  * They still run in the host JS realm, so the app runs battles in a Web Worker
  * (no DOM, killable on infinite loops).
  */
 import { parse } from "acorn";
-import type { CompileError } from "../protocol";
+import { message, type CompileError, type Message } from "../protocol";
 
 /** Names of the variables a player's script can use directly. */
 export const SCRIPT_GLOBALS = [
@@ -36,7 +36,7 @@ export function checkSyntax(code: string): CompileError | null {
     if (err.pos !== undefined && err.pos >= code.trimEnd().length && /Unexpected token/.test(raw)) {
       // The code ended while something was still open: point at the last real line.
       const lines = code.trimEnd().split("\n");
-      return { message: `Something was opened but never closed. Look for a missing ")" or "}".`, line: lines.length };
+      return { message: message("syntax.unclosed"), line: lines.length };
     }
     return { message: friendlySyntax(raw), line: err.loc?.line, col: err.loc ? err.loc.column + 1 : undefined };
   }
@@ -79,24 +79,26 @@ export function errorLine(e: unknown): number | undefined {
   return line >= 1 ? line : undefined;
 }
 
-function friendlySyntax(msg: string): string {
-  if (/Unexpected token/i.test(msg)) return `Oops! Something is written in a way I don't understand here. Check for a missing ( ) { } or a typo.`;
-  if (/Unterminated string/i.test(msg)) return `A text in "quotes" is not closed. Add the missing quote!`;
-  if (/Unexpected character/i.test(msg)) return `There's a strange character here that doesn't belong in code.`;
-  if (/Identifier .* has already been declared/i.test(msg)) return `${msg}. Use a different name, or remove "let" the second time.`;
-  return `Syntax problem: ${msg}`;
+function friendlySyntax(msg: string): Message {
+  if (/Unexpected token/i.test(msg)) return message("syntax.unexpectedToken");
+  if (/Unterminated string/i.test(msg)) return message("syntax.unterminatedString");
+  if (/Unexpected character/i.test(msg)) return message("syntax.unexpectedCharacter");
+  const m = /Identifier '?(\S+?)'? has already been declared/i.exec(msg);
+  if (m) return message("syntax.alreadyDeclared", { name: m[1] });
+  return message("syntax.other", { detail: msg });
 }
 
-export function friendlyRuntime(msg: string): string {
+/** Turns a JavaScript error message into a message a kid can act on. */
+export function friendlyRuntime(msg: string): Message {
   let m = /^(\w+) is not defined$/.exec(msg);
-  if (m) return `I don't know what "${m[1]}" is. Is it spelled right? (Capital letters matter!)`;
+  if (m) return message("runtime.notDefined", { name: m[1] });
   m = /Cannot read propert(?:y|ies) of (undefined|null) \(reading '(\w+)'\)/.exec(msg) ?? /can't access property "(\w+)", \w+ is (undefined|null)/.exec(msg);
   if (m) {
-    const prop = /reading/.test(msg) ? m[2] : m[1];
-    return `Tried to use ".${prop}" on something that doesn't exist (it's ${/null/.test(msg) ? "null" : "undefined"}). Maybe there is no enemy left? Try checking with if (thing) { ... }`;
+    const property = /reading/.test(msg) ? m[2] : m[1];
+    return message("runtime.missingProperty", { property, value: /null/.test(msg) ? "null" : "undefined" });
   }
   m = /(\S+) is not a function/.exec(msg);
-  if (m) return `"${m[1]}" is not something I can run. Check the spelling, and look in the 📖 Guide for the right name.`;
-  if (/Maximum call stack/i.test(msg)) return `Your code calls itself forever! (Maximum call stack exceeded)`;
-  return msg;
+  if (m) return message("runtime.notAFunction", { name: m[1] });
+  if (/Maximum call stack/i.test(msg)) return message("runtime.stackOverflow");
+  return message("runtime.other", { detail: msg });
 }

@@ -1,3 +1,5 @@
+import type { ItemKind, Team, UnitSnap, UnitType } from "@code-royale/engine";
+
 export interface ViewOptions {
   /** Hide what the blue team can't see. */
   fog: boolean;
@@ -31,15 +33,35 @@ export const ACT_ICONS: Record<string, string> = {
   idle: "💤",
 };
 
-export const ACT_LABELS: Record<string, string> = {
-  attack: "attacking",
-  explore: "exploring",
-  follow: "following",
-  patrol: "patrolling",
-  hide: "hiding",
-  escape: "escaping",
-  wait: "waiting",
-  circle: "circling",
-  move: "moving",
-  idle: "no orders",
-};
+export type Act = UnitSnap["act"];
+
+/**
+ * Every word the renderer draws. The renderer speaks no language of its own:
+ * the app gives it these, in the player's language.
+ */
+export interface RendererText {
+  /** A team's health bar: "BLUE · 3 fighters". */
+  teamBar(team: Team, alive: number): string;
+  /** The survival clock, and the banner when a wave arrives: "WAVE 3". */
+  wave(n: number): string;
+  /** Under the wave banner: "Here they come!". */
+  waveIncoming: string;
+  slowMotion: string;
+  /** Playback speed: "2× speed". */
+  speed(speed: number): string;
+  detectionRadius(radius: number): string;
+  /** A fighter's tooltip title: "Ace the Knight". */
+  unitTitle(name: string, type: UnitType): string;
+  hidden: string;
+  spotted: string;
+  /** What a fighter is doing, in its tooltip: "attacking". */
+  acts: Record<Act, string>;
+  /** Pops up when an item is picked up: "RAGE!". */
+  pickup: Record<ItemKind, string>;
+  /** Pops up when one of your fighters uses its special move: "WHIRLWIND!". */
+  special(type: UnitType): string;
+  /** Banners at the end of a battle (shown by the app through `showBanner`). */
+  outcome: Record<BattleOutcome, string>;
+}
+
+export type BattleOutcome = "victory" | "defeat" | "timeUp";

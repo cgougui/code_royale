@@ -18,6 +18,7 @@ const result: BattleResult = {
 function replay(count = 50, done = true): BattleReplay & { frames: Frame[] } {
   return {
     levelId: "training",
+    locale: "en",
     code: "",
     seed: 7,
     infos: new Map(),

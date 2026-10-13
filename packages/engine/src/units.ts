@@ -1,9 +1,8 @@
-/** The fighter catalog: stats, special moves and names. */
+/** The fighter catalog: stats, special moves and fighter names. Descriptions are text: see the content locales. */
 import type { UnitStats, UnitType } from "./protocol";
 
 export const UNIT_STATS: Record<UnitType, UnitStats> = {
   knight: {
-    label: "Knight",
     emoji: "🛡️",
     hp: 160,
     speed: 72,
@@ -12,11 +11,9 @@ export const UNIT_STATS: Record<UnitType, UnitStats> = {
     damage: 14,
     cooldown: 0.8,
     sight: 170,
-    special: { name: "Whirlwind", cooldown: 8, description: "Spins around, hitting every enemy close by for big damage." },
-    description: "Tough melee fighter. Gets close and hits hard.",
+    special: { cooldown: 8 },
   },
   archer: {
-    label: "Archer",
     emoji: "🏹",
     hp: 80,
     speed: 76,
@@ -26,11 +23,9 @@ export const UNIT_STATS: Record<UnitType, UnitStats> = {
     cooldown: 1.0,
     projectile: "arrow",
     sight: 230,
-    special: { name: "Power Shot", cooldown: 7, description: "A huge arrow that flies through everyone in its path." },
-    description: "Shoots arrows from far away, but is fragile up close.",
+    special: { cooldown: 7 },
   },
   scout: {
-    label: "Scout",
     emoji: "🔭",
     hp: 70,
     speed: 100,
@@ -40,11 +35,9 @@ export const UNIT_STATS: Record<UnitType, UnitStats> = {
     cooldown: 0.6,
     projectile: "knife",
     sight: 300,
-    special: { name: "Smoke Bomb", cooldown: 10, description: "Vanishes in a cloud of smoke: invisible and extra fast for 3 seconds. Attacking breaks it." },
-    description: "Super fast with the biggest detection radius. Can even spot enemies hiding in bushes from far away!",
+    special: { cooldown: 10 },
   },
   mage: {
-    label: "Mage",
     emoji: "🔥",
     hp: 70,
     speed: 64,
@@ -55,11 +48,9 @@ export const UNIT_STATS: Record<UnitType, UnitStats> = {
     projectile: "fireball",
     splash: 45,
     sight: 200,
-    special: { name: "Meteor", cooldown: 10, description: "Calls a giant meteor that crashes down on a spot." },
-    description: "Throws fireballs that also burn enemies nearby.",
+    special: { cooldown: 10 },
   },
   goblin: {
-    label: "Goblin",
     emoji: "👺",
     hp: 55,
     speed: 88,
@@ -68,11 +59,9 @@ export const UNIT_STATS: Record<UnitType, UnitStats> = {
     damage: 7,
     cooldown: 0.7,
     sight: 160,
-    special: { name: "Frenzy", cooldown: 9, description: "Gets angry and attacks super fast for a moment." },
-    description: "Small, quick and sneaky.",
+    special: { cooldown: 9 },
   },
   ogre: {
-    label: "Ogre",
     emoji: "👹",
     hp: 900,
     speed: 44,
@@ -81,8 +70,7 @@ export const UNIT_STATS: Record<UnitType, UnitStats> = {
     damage: 34,
     cooldown: 1.6,
     sight: 170,
-    special: { name: "Stomp", cooldown: 6, description: "Stomps the ground, hurting everyone around." },
-    description: "A giant. Slow, but each hit hurts a lot.",
+    special: { cooldown: 6 },
   },
 };
 

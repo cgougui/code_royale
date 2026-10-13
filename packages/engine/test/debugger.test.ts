@@ -36,7 +36,7 @@ function framesOf(blueCode: string, instrumented: boolean): Frame[] {
   if (b.prepare()) throw new Error("compile error");
   if (instrumented) {
     const { brain, error } = compileInstrumented(blueCode);
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(JSON.stringify(error.message));
     const noop = { s() {}, i() {}, o() {}, l() {} };
     const interceptor: ScriptInterceptor = { run: (_, args) => (brain!(...args, noop), true), failed() {} };
     b.scripts.interceptor = interceptor;
@@ -103,7 +103,7 @@ describe("debugger: instrumented scripts", () => {
   });
 
   it("refuses names it uses itself", () => {
-    expect(compileInstrumented("let __cr = 1").error?.message).toMatch(/__cr/);
+    expect(compileInstrumented("let __cr = 1").error?.message).toEqual({ code: "debug.reservedName", params: { prefix: "__cr" } });
   });
 });
 
@@ -113,7 +113,7 @@ describe("debugger: traces", () => {
   it("records each statement, the variables and the order given so far", () => {
     const t = trace(STARTER);
     expect(lines(t)).toEqual([1, 2, 5, "end"]);
-    expect(varOf(t, 0, "enemy")).toBe("not created yet");
+    expect(t.steps[0].vars.find((v) => v.name === "enemy")?.value.kind).toBe("unset");
     expect(varOf(t, 1, "enemy")).toBe("null");
     expect(t.steps[2].order).toBeNull();
     expect(t.steps[3].order).toBe("me.explore()");
@@ -150,7 +150,7 @@ describe("debugger: traces", () => {
     expect(t.output).toEqual([{ kind: "log", text: "hello 42" }]);
     const last = t.steps.at(-1)!;
     expect(last).toMatchObject({ kind: "error", line: 3 });
-    expect(last.error).toMatch(/doesn't exist/);
+    expect(last.error).toEqual({ code: "runtime.missingProperty", params: { property: "health", value: "null" } });
     expect(t.steps[1].output).toBe(1);
   });
 
@@ -158,7 +158,7 @@ describe("debugger: traces", () => {
     const t = trace(`let n = 0\nwhile (true) { n++ }`);
     expect(t.truncated).toBe(true);
     expect(t.steps.at(-1)).toMatchObject({ kind: "error", line: 2 });
-    expect(t.steps.at(-1)!.error).toMatch(/never stops/);
+    expect(t.steps.at(-1)!.error?.code).toBe("runtime.endlessLoop");
   });
 
   it("says when a fighter can't be traced", () => {

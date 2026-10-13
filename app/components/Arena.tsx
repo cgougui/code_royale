@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ARENA_H, ARENA_W } from "@code-royale/engine";
 import { ArenaRenderer } from "@code-royale/renderer";
 import {
   useArenaPlayback,
   type ArenaPlaybackProps,
 } from "~/hooks/use-arena-playback";
+import { useRendererText } from "~/i18n";
 
 interface Props extends ArenaPlaybackProps {
   onPickUnit?: (id: number) => void;
@@ -17,6 +19,8 @@ export function Arena(props: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<ArenaRenderer | null>(null);
   const [size, setSize] = useState({ w: 800, h: 500 });
+  const { t } = useTranslation();
+  const text = useRendererText();
   // Fit a 16:10 arena into the available space.
   useEffect(() => {
     const el = boxRef.current;
@@ -33,9 +37,13 @@ export function Arena(props: Props) {
 
   useEffect(() => {
     if (!canvasRef.current) return;
-    rendererRef.current ??= new ArenaRenderer(canvasRef.current);
+    // Created once; its text follows the language through the effect below.
+    rendererRef.current ??= new ArenaRenderer(canvasRef.current, text);
     rendererRef.current.resize(size.w, size.h);
   }, [size]);
+  useEffect(() => {
+    if (rendererRef.current) rendererRef.current.text = text;
+  }, [text]);
 
   const count = useArenaPlayback(rendererRef, props);
 
@@ -64,15 +72,17 @@ export function Arena(props: Props) {
           <div className="cr-overlay">
             <div
               key={count}
-              className={`cr-countdown ${count.length > 1 ? "go" : ""}`}
+              className={`cr-countdown ${count === "fight" || count === "go" ? "go" : ""}`}
             >
-              {count}
+              {count === "fight" || count === "go"
+                ? t(`arena.countdown.${count}`)
+                : count}
             </div>
           </div>
         )}
         {!run && (
           <div className="cr-preview-hint">
-            ⚔️ Press FIGHT! · Dashed circles = what your fighters can see
+            {t("arena.previewHint")}
           </div>
         )}
         {children}

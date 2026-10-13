@@ -10,7 +10,7 @@
  * fighter reaches a breakpoint line, then that tick is replayed and recorded.
  */
 import { Battle } from "./battle";
-import type { BattleSetup, CompileError, Trace, TraceReply, TraceRequest, TraceStep, TraceVar } from "./protocol";
+import { message, type BattleSetup, type CompileError, type Trace, type TraceReply, type TraceRequest, type TraceStep, type TraceVar } from "./protocol";
 import type { ScriptInterceptor } from "./scripting/brains";
 import { compileInstrumented, type DebugHooks, type InstrumentedBrain, type StepPoint } from "./scripting/instrument";
 import { inspect } from "./scripting/inspect";
@@ -31,7 +31,7 @@ interface Compiled {
 
 class EndlessLoop extends Error {
   constructor() {
-    super(`This loop never stops! It went round more than ${MAX_ROUNDS.toLocaleString("en")} times in a single tick.`);
+    super(`Endless loop: more than ${MAX_ROUNDS} rounds in a single tick`);
   }
 }
 
@@ -44,7 +44,7 @@ export function debugBattle(setup: BattleSetup, req: TraceRequest): TraceReply {
   if (req.breakpoints?.length) {
     const hit = findBreakpoint(setup, c, tick, new Set(req.breakpoints), unitId);
     if ("error" in hit) return { kind: "compileError", error: hit.error };
-    if (!hit.found) return { kind: "unavailable", reason: "No fighter reached a breakpoint before the end of the battle." };
+    if (!hit.found) return { kind: "unavailable", reason: message("debug.noBreakpointHit") };
     ({ tick, unitId } = hit.found);
   }
   return traceTick(setup, c, tick, unitId);
@@ -61,9 +61,9 @@ function traceTick(setup: BattleSetup, c: Compiled, tick: number, unitId: number
   if ("error" in b) return { kind: "compileError", error: b.error };
   while (b.tick < tick && !b.result) b.step();
   const u = b.world.units.find((x) => x.id === unitId);
-  if (b.result) return { kind: "unavailable", reason: "The battle is already over at this moment." };
-  if (!u || u.team !== "blue") return { kind: "unavailable", reason: "Pick one of your blue fighters to debug." };
-  if (!u.alive) return { kind: "unavailable", reason: `${u.name} is knocked out at this moment, so its code doesn't run.` };
+  if (b.result) return { kind: "unavailable", reason: message("debug.battleOver") };
+  if (!u || u.team !== "blue") return { kind: "unavailable", reason: message("debug.pickBlueFighter") };
+  if (!u.alive) return { kind: "unavailable", reason: message("debug.knockedOut", { name: u.name }) };
   const rec = new Recorder(b, u, c);
   b.scripts.interceptor = rec;
   b.step();
@@ -149,7 +149,7 @@ class Recorder implements ScriptInterceptor {
       output: this.battle.scripts.logs
         .slice(this.outputStart)
         .filter((l) => l.kind !== "error")
-        .map((l) => ({ kind: l.kind, text: l.text })),
+        .map((l) => (l.kind === "log" ? { kind: l.kind, text: l.text } : { kind: l.kind, message: l.message })),
       truncated: this.truncated,
     };
   }
@@ -160,7 +160,7 @@ class Recorder implements ScriptInterceptor {
     const at = kind === "end" ? this.lastTop : this.last;
     const step: TraceStep = { kind, ...this.state(0, at?.point, at?.getters ?? []) };
     if (kind === "error") {
-      step.error = e instanceof EndlessLoop ? e.message : friendlyRuntime(String((e as Error)?.message ?? e));
+      step.error = e instanceof EndlessLoop ? message("runtime.endlessLoop", { max: MAX_ROUNDS }) : friendlyRuntime(String((e as Error)?.message ?? e));
       // The statement that crashed is usually the last step; the error's own line is more precise when they differ.
       const p = at ? this.c.points[at.point] : undefined;
       const line = e instanceof EndlessLoop ? p?.line : (errorLine(e) ?? p?.line);
@@ -190,7 +190,7 @@ function read(getter: (() => unknown) | undefined): TraceVar["value"] {
     return inspect(getter?.());
   } catch {
     // A `let`/`const` whose line hasn't run yet.
-    return { text: "not created yet", kind: "unset" };
+    return { text: "", kind: "unset" };
   }
 }
 

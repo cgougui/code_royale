@@ -7,10 +7,17 @@ import {
 import type { BattleReplay } from "./battle-replay";
 
 type Phase = "preview" | "countdown" | "playing" | "ending" | "finished";
+/** Which banner to show; its text is the presentation's business. */
+export type BattleOutcome = "victory" | "defeat" | "timeUp";
 export type PlaybackEffect =
   | { kind: "reset" }
   | { kind: "event"; event: GameEvent; sound: boolean }
-  | { kind: "banner"; text: string; color: string; duration: number }
+  | {
+      kind: "banner";
+      outcome: BattleOutcome;
+      color: string;
+      duration: number;
+    }
   | { kind: "confetti"; team: Team }
   | { kind: "finish-sound"; winner: BattleResult["winner"] };
 
@@ -122,7 +129,7 @@ export class BattlePlayback {
           const win = run.result.winner === "blue";
           effects.push({
             kind: "banner",
-            text: win ? "VICTORY!" : "DEFEAT",
+            outcome: win ? "victory" : "defeat",
             color: win ? "#fde047" : "#fca5a5",
             duration: 2.2,
           });
@@ -138,7 +145,7 @@ export class BattlePlayback {
         if (run.result.winner === "draw")
           effects.push({
             kind: "banner",
-            text: "TIME'S UP!",
+            outcome: "timeUp",
             color: "#fde68a",
             duration: 2,
           });

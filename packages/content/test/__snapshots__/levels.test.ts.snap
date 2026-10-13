@@ -26,7 +26,7 @@ exports[`golden replays > fire 1`] = `
 
 exports[`golden replays > ogre 1`] = `
 {
-  "hash": "c0a347db",
+  "hash": "e8de5519",
   "time": 45.1,
   "winner": "red",
 }
@@ -42,7 +42,7 @@ exports[`golden replays > potions 1`] = `
 
 exports[`golden replays > royale 1`] = `
 {
-  "hash": "12bc0e03",
+  "hash": "6397a91b",
   "time": 16,
   "winner": "red",
 }

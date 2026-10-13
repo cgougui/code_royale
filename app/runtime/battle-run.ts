@@ -4,14 +4,18 @@ import type {
   LogEntry,
   UnitInfo,
 } from "@code-royale/engine";
-import type { FromWorker } from "./protocol";
+import type { Locale } from "@code-royale/content";
+import type { FromWorker, ToWorker } from "./protocol";
 import type { BattleReplay } from "../domain/battle-replay";
+import { appMessage, type AppMessage } from "../domain/messages";
 
 export interface RunError {
   kind: "compile" | "loop" | "crash" | "runtime";
-  message: string;
+  message: AppMessage;
   line?: number;
   col?: number;
+  /** The fighter whose code crashed (runtime errors). */
+  unit?: string;
 }
 
 export interface RunHandlers {
@@ -38,6 +42,7 @@ export class BattleRun implements BattleReplay {
 
   constructor(
     readonly levelId: string,
+    readonly locale: Locale,
     /** The code this battle was fought with (the debugger replays it). */
     readonly code: string,
     readonly seed: number,
@@ -52,16 +57,21 @@ export class BattleRun implements BattleReplay {
       ev.preventDefault();
       this.fail({
         kind: "crash",
-        message: `Something went wrong: ${ev.message}`,
+        message: appMessage("app.unexpected", { detail: ev.message }),
       });
     };
-    this.worker.postMessage({ type: "run", levelId, blueCode: code, seed });
+    this.worker.postMessage({
+      type: "run",
+      levelId,
+      locale,
+      blueCode: code,
+      seed,
+    } satisfies ToWorker);
     this.watchdog = setInterval(() => {
       if (performance.now() - this.lastMessage > STUCK_MS) {
         this.fail({
           kind: "loop",
-          message:
-            "Your code got stuck! 🌀 It's probably a loop that never ends (like a while loop whose condition is always true). Check your loops and try again.",
+          message: appMessage("app.codeStuck"),
         });
       }
     }, 250);

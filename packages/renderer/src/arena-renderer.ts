@@ -24,7 +24,7 @@ import { TerrainLayer } from "./terrain";
 import { FogLayer } from "./fog";
 import { BattleEffects } from "./effects";
 import { drawHud } from "./hud";
-import { VIS, type HudInfo, type ViewOptions } from "./view";
+import { VIS, type HudInfo, type RendererText, type ViewOptions } from "./view";
 import {
   DecisionOverlay,
   drawBars,
@@ -63,7 +63,11 @@ export class ArenaRenderer {
   hoveredUnit: number | null = null;
   soundOn = true;
 
-  constructor(private canvas: HTMLCanvasElement) {
+  constructor(
+    private canvas: HTMLCanvasElement,
+    /** The words to draw, in the player's language. Replace it when the language changes. */
+    public text: RendererText,
+  ) {
     this.ctx = canvas.getContext("2d")!;
   }
 
@@ -103,6 +107,7 @@ export class ArenaRenderer {
       infos,
       playSound && this.soundOn,
       this.gameTime,
+      this.text,
     );
   }
 
@@ -172,7 +177,7 @@ export class ArenaRenderer {
       if (view.preview) {
         // Before the battle: show every blue fighter's detection radius.
         for (const e of blueEyes)
-          drawSightCircle(ctx, e.x, e.y, e.sight, "blue", 0.55, false);
+          drawSightCircle(ctx, e.x, e.y, e.sight, "blue", 0.55);
       }
 
       // Target rings: who is ganging up on whom.
@@ -320,7 +325,7 @@ export class ArenaRenderer {
           stats.sight,
           hovered.info.team,
           1,
-          true,
+          this.text.detectionRadius(stats.sight),
         );
         ctx.strokeStyle = "rgba(255,255,255,0.4)";
         ctx.lineWidth = 1.5;
@@ -337,13 +342,14 @@ export class ArenaRenderer {
           ctx,
           hovered.u,
           hovered.info,
+          this.text,
           tgt ? infos.get(tgt.id)?.name : undefined,
         );
       }
     }
 
     this.effects.draw(ctx, dt);
-    if (hud) drawHud(ctx, a, infos, hud);
+    if (hud) drawHud(ctx, a, infos, hud, this.text);
     this.effects.drawBanner(ctx, dt);
   }
 }

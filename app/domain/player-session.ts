@@ -1,9 +1,10 @@
-import { levelById } from "@code-royale/content";
+import { levelById, type Locale } from "@code-royale/content";
 import type { BattleResult } from "@code-royale/engine";
 import {
   codeFor,
   completeBattle,
   defaultProgress,
+  localizeCode,
   rememberCode,
   type Progress,
 } from "./progress";
@@ -12,6 +13,7 @@ export interface PlayerSession {
   progress: Progress;
   code: string;
   loaded: boolean;
+  locale: Locale;
 }
 
 export type PlayerAction =
@@ -21,11 +23,17 @@ export type PlayerAction =
   | { type: "pick-level"; id: string }
   | { type: "complete-battle"; levelId: string; result: BattleResult }
   | { type: "toggle-mute" }
-  | { type: "acknowledge-intro" };
+  | { type: "acknowledge-intro" }
+  | { type: "set-locale"; locale: Locale };
 
-export function initialSession(): PlayerSession {
+export function initialSession(locale: Locale): PlayerSession {
   const progress = defaultProgress();
-  return { progress, code: codeFor(progress, progress.current), loaded: false };
+  return {
+    progress,
+    code: codeFor(progress, progress.current, locale),
+    loaded: false,
+    locale,
+  };
 }
 
 export function playerSession(
@@ -36,8 +44,9 @@ export function playerSession(
   switch (action.type) {
     case "hydrate":
       return {
+        ...state,
         progress: action.progress,
-        code: codeFor(action.progress, action.progress.current),
+        code: codeFor(action.progress, action.progress.current, state.locale),
         loaded: true,
       };
     case "edit":
@@ -50,7 +59,7 @@ export function playerSession(
       return {
         ...state,
         progress: { ...saved, current: action.id },
-        code: codeFor(saved, action.id),
+        code: codeFor(saved, action.id, state.locale),
       };
     }
     case "complete-battle":
@@ -63,5 +72,12 @@ export function playerSession(
       return { ...state, progress: { ...p, muted: !p.muted } };
     case "acknowledge-intro":
       return { ...state, progress: { ...p, seenIntro: true } };
+    case "set-locale":
+      // Untouched starter code follows the language; the player's own code never changes.
+      return {
+        ...state,
+        locale: action.locale,
+        code: localizeCode(state.code, action.locale),
+      };
   }
 }

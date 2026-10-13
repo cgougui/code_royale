@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { BattleResult, LogEntry } from "@code-royale/engine";
+import type { Locale } from "@code-royale/content";
+import type { BattleResult } from "@code-royale/engine";
+import type { AppMessage, ConsoleEntry } from "../domain/messages";
 import type { BattleOutcome } from "../domain/progress";
 import { BattleRun, type RunError } from "../runtime/battle-run";
 
@@ -7,6 +9,7 @@ import { BattleRun, type RunError } from "../runtime/battle-run";
 export function useBattleSession(
   levelId: string,
   code: string,
+  locale: Locale,
   recordBattle: (levelId: string, result: BattleResult) => BattleOutcome,
 ) {
   const active = useRef<BattleRun | null>(null);
@@ -17,12 +20,12 @@ export function useBattleSession(
   const [skipKey, setSkipKey] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [paused, setPaused] = useState(false);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [logs, setLogs] = useState<ConsoleEntry[]>([]);
   const [visibleTick, setVisibleTick] = useState(0);
   const [runError, setRunError] = useState<RunError | null>(null);
   const [lineError, setLineError] = useState<{
     line?: number;
-    message: string;
+    message: AppMessage;
   } | null>(null);
   const [result, setResult] = useState<BattleOutcome | null>(null);
 
@@ -53,6 +56,7 @@ export function useBattleSession(
     setStarting(true);
     const battle = new BattleRun(
       levelId,
+      locale,
       code,
       Math.floor(Math.random() * 1e9),
       {
@@ -65,16 +69,18 @@ export function useBattleSession(
           if (active.current !== battle) return;
           setLogs((previous) => [...previous, ...entries]);
           const error = entries.find((entry) => entry.kind === "error");
-          if (error) {
+          if (error?.kind === "error") {
             setLineError(
-              (current) => current ?? { line: error.line, message: error.text },
+              (current) =>
+                current ?? { line: error.line, message: error.message },
             );
             setRunError(
               (current) =>
                 current ?? {
                   kind: "runtime",
                   line: error.line,
-                  message: `${error.unit ? `${error.unit} says: ` : ""}${error.text}`,
+                  message: error.message,
+                  unit: error.unit,
                 },
             );
           }
@@ -86,7 +92,12 @@ export function useBattleSession(
           setRun(null);
           setLogs((previous) => [
             ...previous,
-            { tick: -1, kind: "error", text: error.message, line: error.line },
+            {
+              tick: -1,
+              kind: "error",
+              message: error.message,
+              line: error.line,
+            },
           ]);
           if (error.line)
             setLineError({ line: error.line, message: error.message });
@@ -94,7 +105,7 @@ export function useBattleSession(
       },
     );
     active.current = battle;
-  }, [code, levelId, stop]);
+  }, [code, levelId, locale, stop]);
 
   const onFinished = useCallback(
     (res: BattleResult) => {

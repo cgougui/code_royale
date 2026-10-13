@@ -22,7 +22,7 @@ export const layers = [
   {
     name: "content tests",
     dir: "packages/content/test",
-    allow: ["vitest", "@code-royale/engine", "@code-royale/content"],
+    allow: ["vitest", "acorn", "@code-royale/engine", "@code-royale/content"],
     local: "packages/content",
   },
   {
@@ -55,16 +55,30 @@ export const layers = [
     app: ["domain", "runtime"],
   },
   {
+    name: "i18n",
+    dir: "app/i18n",
+    allow: [
+      "react",
+      "i18next",
+      "react-i18next",
+      "i18next-browser-languagedetector",
+      "@code-royale/engine",
+      "@code-royale/content",
+      "@code-royale/renderer",
+    ],
+    app: ["domain"],
+  },
+  {
     name: "components",
     dir: "app/components",
     allow: "*",
-    app: ["domain", "hooks"],
+    app: ["domain", "hooks", "i18n"],
   },
   {
     name: "features",
     dir: "app/features",
     allow: "*",
-    app: ["domain", "hooks", "components"],
+    app: ["domain", "hooks", "components", "i18n"],
   },
   {
     name: "routes",
@@ -75,14 +89,14 @@ export const layers = [
   {
     name: "app tests",
     dir: "app/test",
-    allow: ["vitest", "@code-royale/engine", "@code-royale/content"],
-    app: ["domain", "runtime", "hooks"],
+    allow: ["vitest", "i18next", "@code-royale/engine", "@code-royale/content"],
+    app: ["domain", "runtime", "hooks", "i18n"],
   },
   {
     name: "shell",
     dir: "app",
     allow: "*",
-    app: ["features", "routes", "components"],
+    app: ["features", "routes", "components", "i18n"],
   },
 ];
 

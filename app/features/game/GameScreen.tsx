@@ -18,6 +18,7 @@ import {
   IconVolumeOff,
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Arena } from "~/components/Arena";
 import { CodeEditor, type CodeEditorHandle } from "~/components/CodeEditor";
 import { ConsolePanel } from "~/components/ConsolePanel";
@@ -25,15 +26,19 @@ import { DebugPanel } from "~/components/DebugPanel";
 import { SpyModal, WelcomeModal } from "~/components/Dialogs";
 import { GuideDrawer } from "~/components/GuideDrawer";
 import { CrownLogo, StarIcon } from "~/components/Icons";
+import { LanguageMenu } from "~/components/LanguageMenu";
 import { LevelMap } from "~/components/LevelMap";
 import { levelColor, MissionCard } from "~/components/MissionCard";
 import { ResultOverlay } from "~/components/ResultOverlay";
-import { LEVELS, starter } from "@code-royale/content";
 import { totalStars } from "~/domain/progress";
+import { useContent, useFormatMessage } from "~/i18n";
 import { useGameController } from "./use-game-controller";
 import { BattleControls } from "./BattleControls";
 
 export function GameScreen() {
+  const { t } = useTranslation();
+  const content = useContent();
+  const formatMessage = useFormatMessage();
   const {
     player,
     battle,
@@ -98,6 +103,7 @@ export function GameScreen() {
           leftSection={<IconMap2 size={18} />}
           rightSection={<IconChevronDown size={16} />}
           onClick={() => setMapOpen(true)}
+          aria-label={t("header.levelPicker")}
         >
           <span
             style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
@@ -109,14 +115,14 @@ export function GameScreen() {
           </span>
         </Button>
         <span style={{ flex: 1 }} />
-        <Tooltip label="Total stars" withArrow>
+        <Tooltip label={t("header.totalStars")} withArrow>
           <Group gap={4} wrap="nowrap">
             <StarIcon on size={22} />
             <Text fw={700} c="yellow.2" size="lg">
               {totalStars(progress)}
             </Text>
             <Text span c="dimmed" size="sm">
-              / {LEVELS.length * 3}
+              / {content.levels.length * 3}
             </Text>
           </Group>
         </Tooltip>
@@ -125,14 +131,18 @@ export function GameScreen() {
           leftSection={<IconBook2 size={18} />}
           onClick={() => setGuideOpen(true)}
         >
-          Guide
+          {t("header.guide")}
         </Button>
-        <Tooltip label={muted ? "Sound off" : "Sound on"} withArrow>
+        <LanguageMenu />
+        <Tooltip
+          label={muted ? t("header.soundOff") : t("header.soundOn")}
+          withArrow
+        >
           <ActionIcon
             variant="light"
             color="gray"
             size="lg"
-            aria-label="Toggle sound"
+            aria-label={t("header.toggleSound")}
             onClick={player.toggleMute}
           >
             {muted ? <IconVolumeOff size={18} /> : <IconVolume size={18} />}
@@ -152,22 +162,20 @@ export function GameScreen() {
           )}
           <div className="cr-panel cr-editor-wrap">
             <div className="cr-editor-toolbar">
-              <Tooltip label="Ctrl + Enter" withArrow>
+              <Tooltip label={t("editor.fightShortcut")} withArrow>
                 <button
                   className={`cr-fight ${!run && !starting && progress.battles < 3 ? "pulse" : ""}`}
                   onClick={startBattle}
                   disabled={starting}
                 >
-                  ⚔️ {run ? "FIGHT AGAIN" : "FIGHT!"}
+                  ⚔️ {run ? t("editor.fightAgain") : t("editor.fight")}
                 </button>
               </Tooltip>
               <Text size="sm" c="dimmed" style={{ flex: 1 }} truncate>
                 {debugging ? (
-                  <>🔒 Your code is locked while you debug</>
+                  t("editor.locked")
                 ) : (
-                  <>
-                    ✏️ Code for <b>each</b> blue fighter
-                  </>
+                  <Trans i18nKey="editor.codeForEach" components={{ b: <b /> }} />
                 )}
               </Text>
               <Menu position="bottom-end" withArrow>
@@ -176,7 +184,7 @@ export function GameScreen() {
                     variant="subtle"
                     color="gray"
                     size="lg"
-                    aria-label="More"
+                    aria-label={t("editor.more")}
                   >
                     <IconDotsVertical size={18} />
                   </ActionIcon>
@@ -185,15 +193,11 @@ export function GameScreen() {
                   <Menu.Item
                     leftSection={<IconRestore size={16} />}
                     onClick={() => {
-                      if (
-                        confirm(
-                          "Replace your code with the starter code? Your current code will be lost.",
-                        )
-                      )
-                        setCode(starter.code);
+                      if (confirm(t("editor.resetConfirm")))
+                        setCode(content.starter.code);
                     }}
                   >
-                    Start over with the starter code
+                    {t("editor.reset")}
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
@@ -268,14 +272,19 @@ export function GameScreen() {
                 }}
               >
                 <Text fw={700} c="red.3" mb={4}>
-                  {runError.kind === "loop"
-                    ? "🌀 Your code got stuck!"
-                    : runError.kind === "runtime"
-                      ? "💥 Your fighters are confused!"
-                      : "💥 Oops! Your code has a problem"}
-                  {runError.line ? ` (line ${runError.line})` : ""}
+                  {t(`runError.${runError.kind}`)}
+                  {runError.line
+                    ? ` ${t("runError.atLine", { line: runError.line })}`
+                    : ""}
                 </Text>
-                <Text size="sm">{runError.message}</Text>
+                <Text size="sm">
+                  {runError.unit
+                    ? t("runError.unitSays", {
+                        unit: runError.unit,
+                        message: formatMessage(runError.message),
+                      })
+                    : formatMessage(runError.message)}
+                </Text>
                 <Group gap={8} mt={8}>
                   {runError.line && (
                     <Button
@@ -284,7 +293,7 @@ export function GameScreen() {
                       variant="light"
                       onClick={() => editor.current?.goToLine(runError.line!)}
                     >
-                      Show me line {runError.line}
+                      {t("runError.showLine", { line: runError.line })}
                     </Button>
                   )}
                   {runError.kind === "runtime" &&
@@ -299,7 +308,7 @@ export function GameScreen() {
                           openDebugger(firstError.tick, firstError.unit)
                         }
                       >
-                        Step through it
+                        {t("runError.stepThrough")}
                       </Button>
                     )}
                   <Button
@@ -308,7 +317,7 @@ export function GameScreen() {
                     color="gray"
                     onClick={battle.dismissError}
                   >
-                    OK
+                    {t("runError.ok")}
                   </Button>
                 </Group>
               </div>

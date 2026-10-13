@@ -1,16 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { LEVELS, levelById } from "@code-royale/content";
 import { sfx } from "@code-royale/renderer";
+import { useContent } from "~/i18n";
 import { frameIndex } from "../../domain/battle-replay";
 import { usePlayerSession } from "../../hooks/use-player-session";
 import { useBattleSession } from "../../hooks/use-battle-session";
 import { useDebugger } from "../../hooks/use-debugger";
 
+export type DebugBlocked = "noBattle" | "codeChanged";
+
 /** Coordinates the game use cases. Layout and editor widgets live in GameScreen. */
 export function useGameController() {
-  const player = usePlayerSession();
-  const level = levelById(player.progress.current);
-  const battle = useBattleSession(level.id, player.code, player.recordBattle);
+  const content = useContent();
+  const player = usePlayerSession(content.locale);
+  const level = content.level(player.progress.current);
+  const battle = useBattleSession(
+    level.id,
+    player.code,
+    content.locale,
+    player.recordBattle,
+  );
   const [breakpoints, setBreakpoints] = useState<number[]>([]);
   const [previewTick, setPreviewTick] = useState<number | null>(null);
   const dbg = useDebugger(battle.run, breakpoints);
@@ -23,10 +31,11 @@ export function useGameController() {
     setPreviewTick(null);
   }, [dbg.state?.tick, run]);
 
-  const debugBlocked = !run?.frames.length
-    ? "Press FIGHT first: the debugger replays a battle."
+  /** Why the debugger can't run right now (a key of the `debugBlocked` texts), if it can't. */
+  const debugBlocked: DebugBlocked | null = !run?.frames.length
+    ? "noBattle"
     : player.code !== run.code
-      ? "Your code changed since this battle. Press FIGHT to debug the new code."
+      ? "codeChanged"
       : null;
   const openDebugger = useCallback(
     (tick?: number, unitName?: string) => {
@@ -82,8 +91,8 @@ export function useGameController() {
     player,
     battle,
     level,
-    next: LEVELS[
-      LEVELS.findIndex((candidate) => candidate.id === level.id) + 1
+    next: content.levels[
+      content.levels.findIndex((candidate) => candidate.id === level.id) + 1
     ],
     dbg,
     debugBlocked,

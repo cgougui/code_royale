@@ -1,6 +1,7 @@
 import { Button, Group, Stack, Text } from "@mantine/core";
 import { IconArrowRight, IconCode, IconEye, IconRefresh } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Level } from "@code-royale/content";
 import type { BattleResult } from "@code-royale/engine";
 import { sfx } from "@code-royale/renderer";
@@ -19,18 +20,16 @@ interface Props {
   onSpy: () => void;
 }
 
-const WIN_LINES = ["Your code is unstoppable!", "The Blue Kingdom cheers for you!", "Brilliant commanding!", "Nothing can stop your army!", "Legendary code, Commander!"];
-const LOSE_LINES = ["Every great coder loses sometimes. Change your code and try again!", "So close! What could your fighters do better?", "Tip: a small change can turn the battle around.", "The red team got lucky this time. Revenge?"];
-const DRAW_LINES = ["Nobody won before the clock ran out. Can your army be faster?"];
-
 export function ResultOverlay({ level, result, earned, newRecord, hasNext, muted, onNext, onReplay, onClose, onSpy }: Props) {
+  const { t } = useTranslation();
   const [shown, setShown] = useState(0);
   const won = result.winner === "blue";
   const count = earned.filter(Boolean).length;
-  const line = useMemo(() => {
-    const pool = level.endless ? (count ? WIN_LINES : LOSE_LINES) : won ? WIN_LINES : result.winner === "draw" ? DRAW_LINES : LOSE_LINES;
-    return pool[Math.floor(Math.random() * pool.length)];
-  }, [won, result, level, count]);
+  const pool = level.endless ? (count ? "winLines" : "loseLines") : won ? "winLines" : result.winner === "draw" ? "drawLines" : "loseLines";
+  // Pick once per result, so the line stays put (even if the language changes).
+  const pick = useMemo(() => Math.random(), [result]);
+  const lines = t(`result.${pool}`, { returnObjects: true });
+  const line = lines[Math.floor(pick * lines.length)];
 
   // Stars pop one at a time.
   useEffect(() => {
@@ -47,7 +46,7 @@ export function ResultOverlay({ level, result, earned, newRecord, hasNext, muted
     return () => timers.forEach(clearTimeout);
   }, [earned, muted]);
 
-  const title = level.endless ? `${result.wave} ${result.wave === 1 ? "WAVE" : "WAVES"}!` : won ? "VICTORY!" : result.winner === "draw" ? "TIME'S UP!" : "DEFEAT";
+  const title = level.endless ? t("result.waves", { count: result.wave }) : won ? t("result.victory") : result.winner === "draw" ? t("result.timeUp") : t("result.defeat");
   const good = level.endless ? count > 0 : won;
 
   return (
@@ -56,7 +55,7 @@ export function ResultOverlay({ level, result, earned, newRecord, hasNext, muted
         <div className={`cr-result-title ${good ? "win" : "lose"}`}>{title}</div>
         {newRecord && (
           <Text c="pink.3" fw={700}>
-            🏆 New record!
+            {t("result.newRecord")}
           </Text>
         )}
         <div className="cr-stars">
@@ -75,10 +74,10 @@ export function ResultOverlay({ level, result, earned, newRecord, hasNext, muted
           ))}
         </Stack>
         <Group justify="center" gap="lg" mb={10}>
-          <Stat label="time" value={`${Math.floor(result.time)}s`} />
-          <Stat label="enemies down" value={`${result.redKilled}`} />
-          <Stat label="fighters left" value={`${result.blueAlive}/${result.blueTotal}`} />
-          <Stat label="damage" value={`${result.damageDealt}`} />
+          <Stat label={t("result.time")} value={t("result.seconds", { count: Math.floor(result.time) })} />
+          <Stat label={t("result.enemiesDown")} value={`${result.redKilled}`} />
+          <Stat label={t("result.fightersLeft")} value={`${result.blueAlive}/${result.blueTotal}`} />
+          <Stat label={t("result.damage")} value={`${result.damageDealt}`} />
         </Group>
         <Text size="sm" c="gray.3" mb={14}>
           {line}
@@ -86,25 +85,25 @@ export function ResultOverlay({ level, result, earned, newRecord, hasNext, muted
         <Group justify="center" gap={8}>
           {won && hasNext && !level.endless ? (
             <Button size="md" color="orange" rightSection={<IconArrowRight size={18} />} onClick={onNext} className="cr-next">
-              Next level
+              {t("result.nextLevel")}
             </Button>
           ) : (
             <Button size="md" color="orange" leftSection={<IconCode size={18} />} onClick={onClose}>
-              {won ? "Improve my code" : "Fix my code"}
+              {won ? t("result.improve") : t("result.fix")}
             </Button>
           )}
           <Button size="md" variant="light" leftSection={<IconRefresh size={18} />} onClick={onReplay}>
-            Watch again
+            {t("result.watchAgain")}
           </Button>
         </Group>
         <Group justify="center" gap={8} mt={8}>
           {won && hasNext && !level.endless && (
             <Button size="xs" variant="subtle" color="gray" leftSection={<IconCode size={14} />} onClick={onClose}>
-              Stay & improve
+              {t("result.stay")}
             </Button>
           )}
           <Button size="xs" variant="subtle" color="red" leftSection={<IconEye size={14} />} onClick={onSpy}>
-            Spy on Red's code
+            {t("result.spy")}
           </Button>
         </Group>
       </div>

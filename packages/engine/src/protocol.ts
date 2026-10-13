@@ -19,8 +19,8 @@ export interface Circle {
   r: number;
 }
 
+/** Game rules for a kind of fighter. Names and descriptions are text: they live in the content locales. */
 export interface UnitStats {
-  label: string;
   emoji: string;
   hp: number;
   speed: number; // world units per second
@@ -31,8 +31,7 @@ export interface UnitStats {
   projectile?: ProjectileKind;
   splash?: number; // splash radius for area attacks
   sight: number; // detection radius: how far the fighter can spot enemies
-  special: { name: string; cooldown: number; description: string };
-  description: string;
+  special: { cooldown: number };
 }
 
 /** Static information about a unit, sent once to the renderer. */
@@ -96,7 +95,7 @@ export type GameEvent =
   | { k: "whirl"; id: number; x: number; y: number; r: number }
   | { k: "warn"; x: number; y: number; r: number; ticks: number }
   | { k: "pickup"; id: number; item: ItemKind; x: number; y: number }
-  | { k: "special"; id: number; name: string; x: number; y: number }
+  | { k: "special"; id: number; x: number; y: number }
   | { k: "wave"; n: number }
   | { k: "spotted"; id: number; by: Team; x: number; y: number }
   | { k: "smoke"; id: number; x: number; y: number }
@@ -123,13 +122,55 @@ export interface BattleResult {
   said: boolean;
 }
 
-export interface LogEntry {
+/**
+ * Player-facing messages, in no particular language: a code plus its parameters.
+ * The app turns them into text in the player's language. Adding a code here makes
+ * every locale's catalog fail to type-check until it is translated.
+ */
+export interface MessageParams {
+  /** The code ended while a bracket or brace was still open. */
+  "syntax.unclosed": Record<string, never>;
+  "syntax.unexpectedToken": Record<string, never>;
+  "syntax.unterminatedString": Record<string, never>;
+  "syntax.unexpectedCharacter": Record<string, never>;
+  "syntax.alreadyDeclared": { name: string };
+  /** Any other parser error; `detail` is the parser's own (English) message. */
+  "syntax.other": { detail: string };
+  "runtime.notDefined": { name: string };
+  "runtime.missingProperty": { property: string; value: "null" | "undefined" };
+  "runtime.notAFunction": { name: string };
+  "runtime.stackOverflow": Record<string, never>;
+  "runtime.endlessLoop": { max: number };
+  /** Any other JavaScript error; `detail` is the JavaScript engine's own message. */
+  "runtime.other": { detail: string };
+  "debug.reservedName": { prefix: string };
+  "debug.noBreakpointHit": Record<string, never>;
+  "debug.battleOver": Record<string, never>;
+  "debug.pickBlueFighter": Record<string, never>;
+  "debug.knockedOut": { name: string };
+  "warn.blind": Record<string, never>;
+  "warn.attackPoint": Record<string, never>;
+  "warn.friendlyFire": Record<string, never>;
+  "warn.patrolNeedsPlaces": Record<string, never>;
+  "warn.noBush": Record<string, never>;
+  "warn.tooManyLogs": { max: number };
+}
+export type MessageCode = keyof MessageParams;
+export type Message = { [C in MessageCode]: { code: C; params: MessageParams[C] } }[MessageCode];
+
+/** Builds a `Message`, checking the parameters its code needs. */
+export function message<C extends MessageCode>(code: C, ...params: MessageParams[C] extends Record<string, never> ? [] : [MessageParams[C]]): Message {
+  return { code, params: params[0] ?? {} } as Message;
+}
+
+/** A console line: what the script printed with log() (verbatim), or a message from the game. */
+export type LogLine = { kind: "log"; text: string } | { kind: "error" | "warn"; message: Message };
+
+export type LogEntry = LogLine & {
   tick: number;
-  kind: "log" | "error" | "warn" | "info";
-  text: string;
   line?: number;
   unit?: string;
-}
+};
 
 export interface SpawnSpec {
   type: UnitType;
@@ -165,7 +206,7 @@ export interface BattleSetup {
 
 /** A problem in the player's script found before the battle starts. */
 export interface CompileError {
-  message: string;
+  message: Message;
   line?: number;
   col?: number;
 }
@@ -174,8 +215,13 @@ export interface CompileError {
 
 /** A value as the debugger shows it: a one-line summary plus (for lists and objects) what's inside. */
 export interface Inspected {
+  /** Code-like, language-neutral (the UI adds any words: "empty", "3 things", "not created yet"). */
   text: string;
   kind: "number" | "string" | "boolean" | "empty" | "function" | "list" | "object" | "unset";
+  /** For lists: how many things are in it. */
+  count?: number;
+  /** The value contains itself here (a circular reference). */
+  circular?: boolean;
   children?: { key: string; value: Inspected }[];
   /** How many children were left out (too many, or too deep). */
   more?: number;
@@ -203,7 +249,7 @@ export interface TraceStep {
   order: string | null;
   /** How many `Trace.output` lines had been printed before this step. */
   output: number;
-  error?: string;
+  error?: Message;
 }
 
 /** Everything one fighter's script did during one tick. */
@@ -215,7 +261,7 @@ export interface Trace {
   context: TraceVar[];
   steps: TraceStep[];
   /** log() / warnings printed during this run. */
-  output: { kind: LogEntry["kind"]; text: string }[];
+  output: LogLine[];
   /** More steps ran than the debugger keeps. */
   truncated: boolean;
 }
@@ -232,4 +278,4 @@ export interface TraceRequest {
 export type TraceReply =
   | { kind: "trace"; trace: Trace }
   | { kind: "compileError"; error: CompileError }
-  | { kind: "unavailable"; reason: string };
+  | { kind: "unavailable"; reason: Message };

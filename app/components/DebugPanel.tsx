@@ -19,6 +19,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import {
   TICKS_PER_SECOND,
   type Inspected,
@@ -32,6 +33,7 @@ import {
   type BattleReplay,
 } from "~/domain/battle-replay";
 import type { Debugger } from "~/hooks/use-debugger";
+import { useFormatInspected, useFormatMessage } from "~/i18n";
 
 interface Props {
   dbg: Debugger;
@@ -54,12 +56,14 @@ function clock(tick: number) {
 }
 
 export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
+  const { t } = useTranslation();
+  const formatMessage = useFormatMessage();
   const st = dbg.state!;
   const trace = st.trace;
   const step: TraceStep | undefined = trace?.steps[st.step];
   const prev = trace && st.step > 0 ? trace.steps[st.step - 1] : undefined;
   const [scrub, setScrub] = useState<number | null>(null);
-  const name = run.infos.get(st.unitId)?.name ?? "your fighter";
+  const name = run.infos.get(st.unitId)?.name ?? t("debugger.yourFighter");
   const fighters = blueFightersAt(run, scrub ?? st.tick);
   const maxTick = lastTick(run);
 
@@ -98,7 +102,7 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
       <div className="cr-debug-head">
         <IconBug size={18} color="#fbbf24" />
         <Text fw={700} size="sm">
-          Debugger
+          {t("debugger.title")}
         </Text>
         <div className="cr-debug-fighters">
           {fighters.map((id) => {
@@ -106,7 +110,7 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
             return (
               <Tooltip
                 key={id}
-                label={`Debug ${info.name}'s code (or click it in the arena)`}
+                label={t("debugger.pickFighter", { name: info.name })}
                 withArrow
               >
                 <button
@@ -122,12 +126,12 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
         </div>
         <span style={{ flex: 1 }} />
         {st.busy && <Loader size={14} color="yellow" />}
-        <Tooltip label="Stop debugging (then you can edit your code)" withArrow>
+        <Tooltip label={t("debugger.stop")} withArrow>
           <ActionIcon
             variant="subtle"
             color="gray"
             onClick={dbg.close}
-            aria-label="Stop debugging"
+            aria-label={t("debugger.stopLabel")}
           >
             <IconX size={16} />
           </ActionIcon>
@@ -135,14 +139,14 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
       </div>
 
       <div className="cr-debug-time">
-        <Tooltip label="One tick earlier (1/20 s)" withArrow>
+        <Tooltip label={t("debugger.previousTick")} withArrow>
           <ActionIcon
             size="sm"
             variant="light"
             color="gray"
             onClick={() => dbg.setTick(st.tick - 1)}
             disabled={st.tick <= 0}
-            aria-label="Previous tick"
+            aria-label={t("debugger.previousTickLabel")}
           >
             <IconChevronLeft size={14} />
           </ActionIcon>
@@ -164,16 +168,16 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
             onPreviewTick(null);
             dbg.setTick(t);
           }}
-          aria-label="Battle time"
+          aria-label={t("debugger.timeLabel")}
         />
-        <Tooltip label="One tick later (1/20 s)" withArrow>
+        <Tooltip label={t("debugger.nextTick")} withArrow>
           <ActionIcon
             size="sm"
             variant="light"
             color="gray"
             onClick={() => dbg.setTick(st.tick + 1)}
             disabled={st.tick >= maxTick}
-            aria-label="Next tick"
+            aria-label={t("debugger.nextTickLabel")}
           >
             <IconChevronRight size={14} />
           </ActionIcon>
@@ -185,44 +189,44 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
 
       <div className="cr-debug-controls">
         <StepButton
-          label="Restart"
-          tip="Back to the first line of this tick"
+          label={t("debugger.restart")}
+          tip={t("debugger.restartTip")}
           icon={<IconPlayerSkipBack size={14} />}
           onClick={() => dbg.goToStep(0)}
           disabled={!trace || st.step === 0}
         />
         <StepButton
-          label="Back"
-          tip="Go back one step: time travel! (F7)"
+          label={t("debugger.back")}
+          tip={t("debugger.backTip")}
           icon={<IconArrowLeft size={14} />}
           onClick={() => dbg.move("back")}
           disabled={!trace}
         />
         <StepButton
-          label="Step"
-          tip="Run the yellow line and stop at the next one, even inside your functions (F11)"
+          label={t("debugger.step")}
+          tip={t("debugger.stepTip")}
           icon={<IconStepInto size={14} />}
           onClick={() => dbg.move("into")}
           disabled={!trace}
           main
         />
         <StepButton
-          label="Over"
-          tip="Run the yellow line in one go, without stopping inside the functions it calls (F10)"
+          label={t("debugger.over")}
+          tip={t("debugger.overTip")}
           icon={<IconArrowForwardUp size={14} />}
           onClick={() => dbg.move("over")}
           disabled={!trace}
         />
         <StepButton
-          label="Out"
-          tip="Finish the function you're in and stop right after it (Shift+F11)"
+          label={t("debugger.out")}
+          tip={t("debugger.outTip")}
           icon={<IconStepOut size={14} />}
           onClick={() => dbg.move("out")}
           disabled={!step || step.depth === 0}
         />
         <StepButton
-          label="Continue"
-          tip="Run until a fighter reaches a 🔴 breakpoint (F8). Click left of a line number to add one."
+          label={t("debugger.continue")}
+          tip={t("debugger.continueTip")}
           icon={<IconPlayerTrackNext size={14} />}
           onClick={() => dbg.move("continue")}
           disabled={!trace}
@@ -238,17 +242,16 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
         )}
       </div>
 
-      {st.notice && <div className="cr-debug-notice">{st.notice}</div>}
+      {st.notice && (
+        <div className="cr-debug-notice">{formatMessage(st.notice)}</div>
+      )}
 
       {trace && step ? (
         <div className="cr-debug-body">
           <div className="cr-debug-col">
-            <div className="cr-debug-title">📦 Variables</div>
+            <div className="cr-debug-title">{t("debugger.variables")}</div>
             {step.vars.length === 0 ? (
-              <div className="cr-debug-empty">
-                No variables here yet. Variables you make with let or const show
-                up here.
-              </div>
+              <div className="cr-debug-empty">{t("debugger.noVariables")}</div>
             ) : (
               step.vars.map((v) => (
                 <ValueRow
@@ -260,42 +263,37 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
               ))
             )}
             <details className="cr-debug-context">
-              <summary>👀 What {name} knows this tick</summary>
+              <summary>{t("debugger.knows", { name })}</summary>
               {trace.context.map((v) => (
                 <ValueRow key={v.name} name={v.name} value={v.value} />
               ))}
             </details>
           </div>
           <div className="cr-debug-col">
-            <div className="cr-debug-title">📣 Order so far</div>
+            <div className="cr-debug-title">{t("debugger.order")}</div>
             <div className={`cr-debug-order ${step.order ? "" : "none"}`}>
-              {step.order ??
-                "No order yet: if the code ends now, the fighter just stands there."}
+              {step.order ?? t("debugger.noOrder")}
             </div>
             {step.kind === "end" && (
-              <div className="cr-debug-done">
-                ✅ The code is done for this tick. Press Step to see the next
-                tick.
-              </div>
+              <div className="cr-debug-done">{t("debugger.done")}</div>
             )}
-            {step.kind === "error" && (
-              <div className="cr-debug-crash">💥 {step.error}</div>
+            {step.kind === "error" && step.error && (
+              <div className="cr-debug-crash">
+                💥 {formatMessage(step.error)}
+              </div>
             )}
             {trace.truncated && (
               <div className="cr-debug-empty">
-                Only the first {trace.steps.length - 1} steps are shown: that's
-                a lot of work for one tick!
+                {t("debugger.truncated", { count: trace.steps.length - 1 })}
               </div>
             )}
-            <div className="cr-debug-title">💬 Output</div>
+            <div className="cr-debug-title">{t("debugger.output")}</div>
             {output.length === 0 ? (
-              <div className="cr-debug-empty">
-                Nothing printed yet. Try log(me.health).
-              </div>
+              <div className="cr-debug-empty">{t("debugger.noOutput")}</div>
             ) : (
               output.map((o, i) => (
                 <div key={i} className={`cr-log ${o.kind}`}>
-                  {o.text}
+                  {o.kind === "log" ? o.text : formatMessage(o.message)}
                 </div>
               ))
             )}
@@ -303,7 +301,7 @@ export function DebugPanel({ dbg, run, onPreviewTick, onGoToLine }: Props) {
         </div>
       ) : (
         !st.notice && (
-          <div className="cr-debug-empty">Replaying the battle…</div>
+          <div className="cr-debug-empty">{t("debugger.replaying")}</div>
         )
       )}
     </div>
@@ -353,21 +351,36 @@ function StepStatus({
   total: number;
   onGoToLine: (line: number) => void;
 }) {
-  const where = step.line ? (
-    <span className="cr-log-line" onClick={() => onGoToLine(step.line!)}>
-      line {step.line}
-    </span>
-  ) : null;
+  const { t } = useTranslation();
+  const values = { line: step.line, number: index + 1, total };
+  // The line number inside the sentence is a link to that line.
+  const components = {
+    line: (
+      <span className="cr-log-line" onClick={() => onGoToLine(step.line!)} />
+    ),
+  };
   return (
     <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
       {step.kind === "end" ? (
-        "✅ Done"
+        t("debugger.statusDone")
       ) : step.kind === "error" ? (
-        <>💥 Crashed {where && <>on {where}</>}</>
+        step.line ? (
+          <Trans
+            i18nKey="debugger.statusCrashedOn"
+            values={values}
+            components={components}
+          />
+        ) : (
+          t("debugger.statusCrashed")
+        )
+      ) : step.line ? (
+        <Trans
+          i18nKey="debugger.statusStep"
+          values={values}
+          components={components}
+        />
       ) : (
-        <>
-          Step {index + 1} of {total} · {where}
-        </>
+        t("debugger.statusStepNoLine", values)
       )}
     </Text>
   );
@@ -385,6 +398,8 @@ function ValueRow({
   depth?: number;
   changed?: boolean;
 }) {
+  const { t } = useTranslation();
+  const formatInspected = useFormatInspected();
   const [open, setOpen] = useState(false);
   const expandable = !!value.children?.length;
   const toggle = () => expandable && setOpen((o) => !o);
@@ -400,13 +415,15 @@ function ValueRow({
         role={expandable ? "button" : undefined}
         tabIndex={expandable ? 0 : undefined}
         aria-expanded={expandable ? open : undefined}
-        title={changed ? "Changed by the last step" : undefined}
+        title={changed ? t("debugger.changed") : undefined}
       >
         <span className="cr-var-toggle">
           {expandable ? (open ? "▾" : "▸") : ""}
         </span>
         <span className="cr-var-name">{name}</span>
-        <span className={`cr-var-value ${value.kind}`}>{value.text}</span>
+        <span className={`cr-var-value ${value.kind}`}>
+          {formatInspected(value)}
+        </span>
       </div>
       {open &&
         value.children!.map((c) => (
@@ -420,9 +437,12 @@ function ValueRow({
       {open && value.more ? (
         <div className="cr-var" style={{ paddingLeft: 6 + (depth + 1) * 14 }}>
           <span className="cr-var-toggle" />
-          <span className="cr-var-value empty">…and {value.more} more</span>
+          <span className="cr-var-value empty">
+            {t("debugger.more", { count: value.more })}
+          </span>
         </div>
       ) : null}
     </>
   );
 }
+

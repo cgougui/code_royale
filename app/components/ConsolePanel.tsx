@@ -1,18 +1,21 @@
 import { ActionIcon, Badge, Tooltip } from "@mantine/core";
 import { IconBug, IconChevronDown, IconChevronUp, IconTerminal2, IconTrash } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import { TICKS_PER_SECOND, type LogEntry } from "@code-royale/engine";
+import { useTranslation } from "react-i18next";
+import { TICKS_PER_SECOND } from "@code-royale/engine";
+import type { ConsoleEntry } from "~/domain/messages";
+import { useFormatMessage } from "~/i18n";
 
 interface Props {
-  logs: LogEntry[];
+  logs: ConsoleEntry[];
   visibleTick: number;
   onClear: () => void;
   onGoToLine: (line: number) => void;
   /** Debug the moment a message was printed (not given when the debugger can't run). */
-  onDebug?: (entry: LogEntry) => void;
+  onDebug?: (entry: ConsoleEntry) => void;
 }
 
-const ICON: Record<LogEntry["kind"], string> = { log: "💬", error: "💥", warn: "⚠️", info: "ℹ️" };
+const ICON: Record<ConsoleEntry["kind"], string> = { log: "💬", error: "💥", warn: "⚠️" };
 
 function fmt(tick: number) {
   const s = tick / TICKS_PER_SECOND;
@@ -20,6 +23,8 @@ function fmt(tick: number) {
 }
 
 export function ConsolePanel({ logs, visibleTick, onClear, onGoToLine, onDebug }: Props) {
+  const { t } = useTranslation();
+  const formatMessage = useFormatMessage();
   const [open, setOpen] = useState(true);
   const body = useRef<HTMLDivElement>(null);
   // Messages appear in sync with the battle replay (errors show up right away).
@@ -35,14 +40,14 @@ export function ConsolePanel({ logs, visibleTick, onClear, onGoToLine, onDebug }
     <div className={`cr-panel cr-console ${open ? "" : "collapsed"}`}>
       <div className="cr-console-head" onClick={() => setOpen((o) => !o)}>
         <IconTerminal2 size={16} />
-        Console
+        {t("console.title")}
         {shown.length > 0 && (
           <Badge size="sm" variant="light" color={errors ? "red" : "violet"}>
             {shown.length}
           </Badge>
         )}
         <span style={{ flex: 1 }} />
-        <Tooltip label="Clear messages" withArrow>
+        <Tooltip label={t("console.clear")} withArrow>
           <ActionIcon
             size="sm"
             variant="subtle"
@@ -51,12 +56,12 @@ export function ConsolePanel({ logs, visibleTick, onClear, onGoToLine, onDebug }
               e.stopPropagation();
               onClear();
             }}
-            aria-label="Clear console"
+            aria-label={t("console.clearLabel")}
           >
             <IconTrash size={14} />
           </ActionIcon>
         </Tooltip>
-        <ActionIcon size="sm" variant="subtle" color="gray" aria-label="Toggle console">
+        <ActionIcon size="sm" variant="subtle" color="gray" aria-label={t("console.toggle")}>
           {open ? <IconChevronDown size={14} /> : <IconChevronUp size={14} />}
         </ActionIcon>
       </div>
@@ -64,7 +69,7 @@ export function ConsolePanel({ logs, visibleTick, onClear, onGoToLine, onDebug }
         <div className="cr-console-body" ref={body}>
           {shown.length === 0 && (
             <div className="cr-log" style={{ color: "#6b6390", fontFamily: "Fredoka, sans-serif" }}>
-              Messages from log(...) and errors show up here. Try adding log(me.name, me.health) to your code!
+              {t("console.empty")}
             </div>
           )}
           {shown.map((l, i) => (
@@ -72,15 +77,15 @@ export function ConsolePanel({ logs, visibleTick, onClear, onGoToLine, onDebug }
               {l.tick >= 0 && <span className="cr-log-time">{fmt(l.tick)}</span>}
               <span>{ICON[l.kind]}</span>
               {l.unit && <span className="cr-log-unit">{l.unit}:</span>}
-              <span style={{ flex: 1, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{l.text}</span>
+              <span style={{ flex: 1, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{l.kind === "log" ? l.text : formatMessage(l.message)}</span>
               {l.line && (
                 <span className="cr-log-line" onClick={() => onGoToLine(l.line!)}>
-                  line {l.line}
+                  {t("console.line", { line: l.line })}
                 </span>
               )}
               {onDebug && l.tick >= 0 && l.unit && (
-                <Tooltip label={`Step through ${l.unit}'s code at this moment`} withArrow>
-                  <ActionIcon className="cr-log-debug" size="xs" variant="subtle" color="yellow" onClick={() => onDebug(l)} aria-label="Debug this moment">
+                <Tooltip label={t("console.debugTooltip", { unit: l.unit })} withArrow>
+                  <ActionIcon className="cr-log-debug" size="xs" variant="subtle" color="yellow" onClick={() => onDebug(l)} aria-label={t("console.debugLabel")}>
                     <IconBug size={13} />
                   </ActionIcon>
                 </Tooltip>

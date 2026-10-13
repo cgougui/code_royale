@@ -1,6 +1,6 @@
 /** Helpers to place armies and write star goals. */
 import { ARENA_W, type Circle, type SpawnSpec, type UnitType } from "@code-royale/engine";
-import type { StarGoal } from "../types";
+import type { Goal } from "../types";
 
 /** Places a column of units centred vertically around `cy`. */
 export function column(type: UnitType, x: number, count: number, gap = 70, cy = 300): SpawnSpec[] {
@@ -25,6 +25,9 @@ export function inBush(type: UnitType, b: Circle, count: number): SpawnSpec[] {
   });
 }
 
-export const win: StarGoal = { label: "Win the battle", test: (r) => r.winner === "blue" };
-export const survivors = (n: number): StarGoal => ({ label: `Win with ${n}+ fighters alive`, test: (r) => r.winner === "blue" && r.blueAlive >= n });
-export const flawless: StarGoal = { label: "Nobody on your team falls", test: (r) => r.winner === "blue" && r.blueAlive === r.blueTotal };
+// Star goals (their labels are in the locales, their tests in goals.ts).
+export const win: Goal = { kind: "win" };
+export const survivors = (count: number): Goal => ({ kind: "survivors", count });
+export const flawless: Goal = { kind: "flawless" };
+export const battleCry: Goal = { kind: "battleCry" };
+export const waves = (count: number): Goal => ({ kind: "waves", count });

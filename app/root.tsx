@@ -10,8 +10,11 @@ import "./app.css";
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from "@mantine/core";
 import type { ReactNode } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { DEFAULT_LOCALE } from "@code-royale/content";
+import { useDocumentLocale } from "./i18n";
 import { theme } from "./theme";
 
+// The static page is built in the default language; useDocumentLocale switches it on load.
 export function meta() {
   return [
     { title: "Code Royale ⚔️ Code your army!" },
@@ -25,7 +28,7 @@ export function links() {
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang={DEFAULT_LOCALE} {...mantineHtmlProps}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -45,6 +48,7 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  useDocumentLocale();
   return <Outlet />;
 }
 
@@ -53,7 +57,8 @@ export function HydrateFallback() {
     <div className="boot">
       <div className="boot-crown">👑</div>
       <div className="boot-title">Code Royale</div>
-      <div className="boot-sub">Sharpening swords…</div>
+      {/* No words here: this screen is prerendered before the player's language is known. */}
+      <div className="boot-sub">⚔️</div>
     </div>
   );
 }

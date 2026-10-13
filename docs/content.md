@@ -1,24 +1,30 @@
 # Content (`@code-royale/content`)
 
 Everything that makes the game a game, as typed data. No logic beyond small layout helpers.
+Game data (specs) and what players read (text, one catalog per language) are kept apart; see [i18n.md](i18n.md).
 
 ```
 src/
-  types.ts          Level, Strategy, StarGoal, Hint
+  types.ts          LevelSpec, Goal, ContentText (per-language text) and the localized Level, Strategy, ApiGroup
+  i18n.ts           LOCALES, DEFAULT_LOCALE, LOCALE_NAMES
   levels/
-    01-training.ts … 11-endless.ts   one file per level
-    layout.ts       column(), mirror(), inBush(), center(); star goals win / survivors(n) / flawless
+    01-training.ts … 11-endless.ts   one LevelSpec per level (armies, terrain, goals)
+    layout.ts       column(), mirror(), inBush(), center(); star goals win / survivors(n) / flawless / battleCry / waves(n)
     index.ts        LEVELS (campaign order), levelById, starsFor
-  strategies/       one file per built-in script (red brains + blue starter)
-  api-docs.ts       kid-facing API reference (autocomplete + guide)
+  goals.ts          what each star goal checks, and its label
+  strategies.ts     built-in script ids and teams (red brains + blue starter)
+  api-docs.ts       API_SPEC: the kid-facing API reference structure (autocomplete + guide)
+  locales/<lang>/   levels, hints, strategies' code, API guide, fighter/item names, star goal labels
+  content.ts        contentFor(locale): specs + text = localized content; isStarterCode
   setup.ts          toBattleSetup(level, blueCode, seed) → engine BattleSetup
 ```
 
 ## Level anatomy
 
-`id, num, title, tagline, story, learn, newApi[]` (mission card) · `blue, red` armies · `bushes, rocks, items`
-· `waves | endless` · `redStrategy` · `timeLimit` · `stars` (3 goals) · `hints[]` (progressive, optional code
-that can be inserted) · `note` (required when the armies differ).
+Spec: `id, num, newApi[], color` · `blue, red` armies · `bushes, rocks, items` · `waves | endless` · `redStrategy` (id)
+· `timeLimit` · `stars` (3 goals) · `unevenArmies` (when the armies differ).
+Text, per language: `title, tagline, story, learn` (mission card) · `hints[]` (progressive, optional code that
+can be inserted) · `note` (required when `unevenArmies`) · `names` (display names of named spawns).
 
 ## Difficulty design
 
@@ -46,8 +52,9 @@ that can be inserted) · `note` (required when the armies differ).
 
 ## Adding a level
 
-1. Create `levels/NN-name.ts` exporting a `Level` (use `layout.ts` helpers; reuse or add a strategy).
-2. Append it to `LEVELS` in `levels/index.ts`.
+1. Add its id to `LevelId` (`types.ts`), create `levels/NN-name.ts` exporting a `LevelSpec` (use `layout.ts`
+   helpers; reuse or add a strategy), and append it to `LEVELS` in `levels/index.ts`.
+2. Write its text in every `locales/<lang>/levels.ts` (TypeScript lists the ones missing).
 3. `npm run balance -- <id>` until the starter/hint/advanced results match the targets above.
 4. `npm test`. A new golden snapshot is written; commit it.
 

@@ -8,7 +8,7 @@ import {
   type UnitSnap,
 } from "@code-royale/engine";
 import { TEAM_COLORS, drawStar } from "./sprites";
-import { FONT, VIS, ACT_ICONS, ACT_LABELS } from "./view";
+import { FONT, VIS, ACT_ICONS, type RendererText } from "./view";
 import { roundRect } from "./canvas";
 
 export class DecisionOverlay {
@@ -174,7 +174,8 @@ export function drawSightCircle(
   r: number,
   team: Team,
   alpha: number,
-  label: boolean,
+  /** Written above the circle, if given. */
+  label?: string,
 ) {
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -196,9 +197,9 @@ export function drawSightCircle(
     ctx.textBaseline = "bottom";
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(15,10,25,0.85)";
-    ctx.strokeText(`👁 detection radius ${r}`, x, ly);
+    ctx.strokeText(`👁 ${label}`, x, ly);
     ctx.fillStyle = "#e0f2fe";
-    ctx.fillText(`👁 detection radius ${r}`, x, ly);
+    ctx.fillText(`👁 ${label}`, x, ly);
   }
   ctx.restore();
 }
@@ -291,12 +292,13 @@ export function drawTooltip(
   ctx: CanvasRenderingContext2D,
   u: UnitSnap,
   info: UnitInfo,
+  text: RendererText,
   targetName?: string,
 ) {
-  const doing = `${ACT_ICONS[u.act] ?? ""} ${ACT_LABELS[u.act] ?? u.act}${targetName ? ` ${targetName}` : ""}`;
+  const doing = `${ACT_ICONS[u.act] ?? ""} ${text.acts[u.act] ?? u.act}${targetName ? ` ${targetName}` : ""}`;
   const lines = [
-    `${info.name} the ${UNIT_STATS[info.type].label}${u.hidden ? " (hidden)" : ""}`,
-    `❤ ${Math.ceil(u.hp)} / ${info.maxHp}   👁 ${UNIT_STATS[info.type].sight}   ${u.seen ? (info.team === "blue" ? "SPOTTED!" : "") : ""}`,
+    `${text.unitTitle(info.name, info.type)}${u.hidden ? ` ${text.hidden}` : ""}`,
+    `❤ ${Math.ceil(u.hp)} / ${info.maxHp}   👁 ${UNIT_STATS[info.type].sight}   ${u.seen && info.team === "blue" ? text.spotted : ""}`,
     doing,
   ];
   ctx.font = `600 12px ${FONT}`;

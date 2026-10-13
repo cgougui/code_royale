@@ -2,7 +2,7 @@
  * Runs each team's script once per fighter per tick and collects what scripts
  * produce for the player: log() messages, friendly errors and warnings.
  */
-import type { CompileError, LogEntry, Team } from "../protocol";
+import { message, type CompileError, type LogEntry, type Message, type Team } from "../protocol";
 import { makeRng } from "../math/rng";
 import { ARENA_H, ARENA_W, DT, TICKS_PER_SECOND } from "../rules";
 import type { Unit, World } from "../world/state";
@@ -52,7 +52,7 @@ export class ScriptRunner implements ScriptHost {
     if (blue.error) return blue.error;
     this.brains.blue = blue.brain;
     const red = compile(redCode);
-    if (red.error) throw new Error(`Red script broken: ${red.error.message} (line ${red.error.line})`);
+    if (red.error) throw new Error(`Red script broken: ${JSON.stringify(red.error.message)} (line ${red.error.line})`);
     this.brains.red = red.brain;
     return null;
   }
@@ -102,18 +102,14 @@ export class ScriptRunner implements ScriptHost {
     this.blueBlindTicks = blind ? this.blueBlindTicks + 1 : 0;
     if (this.blueBlindTicks === TICKS_PER_SECOND * 3 && !this.warnedOnce.has("blind")) {
       this.warnedOnce.add("blind");
-      this.logs.push({
-        tick: w.tick,
-        kind: "warn",
-        text: "👀 Your fighters are just standing there: they can't SEE any enemy! Enemies only show up inside a fighter's detection radius. Try adding: else { me.explore() }",
-      });
+      this.logs.push({ tick: w.tick, kind: "warn", message: message("warn.blind") });
     }
   }
 
-  warn(key: string, text: string) {
-    if (this.warnedOnce.has(key) || this.currentUnit?.team !== "blue") return;
-    this.warnedOnce.add(key);
-    this.logs.push({ tick: this.world.tick, kind: "warn", text, unit: this.currentUnit?.name });
+  warn(warning: Message) {
+    if (this.warnedOnce.has(warning.code) || this.currentUnit?.team !== "blue") return;
+    this.warnedOnce.add(warning.code);
+    this.logs.push({ tick: this.world.tick, kind: "warn", message: warning, unit: this.currentUnit?.name });
   }
 
   noteSay(u: Unit) {
@@ -126,11 +122,11 @@ export class ScriptRunner implements ScriptHost {
       return;
     }
     const line = errorLine(e);
-    const text = friendlyRuntime(String((e as Error)?.message ?? e));
-    const key = `${line}:${text}`;
+    const error = friendlyRuntime(String((e as Error)?.message ?? e));
+    const key = `${line}:${JSON.stringify(error)}`;
     if (this.seenErrors.has(key)) return;
     this.seenErrors.add(key);
-    this.logs.push({ tick: this.world.tick, kind: "error", text, line, unit: u.name });
+    this.logs.push({ tick: this.world.tick, kind: "error", message: error, line, unit: u.name });
   }
 
   private log(team: Team, args: unknown[]) {
@@ -139,7 +135,7 @@ export class ScriptRunner implements ScriptHost {
     this.logCount++;
     const u = this.currentUnit;
     if (this.logCount === MAX_LOGS) {
-      this.logs.push({ tick: this.world.tick, kind: "warn", text: `That's a LOT of messages! I stopped showing them after ${MAX_LOGS}.` });
+      this.logs.push({ tick: this.world.tick, kind: "warn", message: message("warn.tooManyLogs", { max: MAX_LOGS }) });
       return;
     }
     this.logs.push({ tick: this.world.tick, kind: "log", text: args.map((a) => formatValue(a)).join(" "), unit: u?.name });

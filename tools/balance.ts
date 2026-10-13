@@ -1,7 +1,9 @@
 // Simulates every level with a few reference strategies to check the difficulty curve.
 // Headless: engine + content only, no browser. Usage: npm run balance [levelId]
-import { LEVELS, starsFor, strategies, toBattleSetup } from "@code-royale/content";
+import { contentFor, starsFor, toBattleSetup } from "@code-royale/content";
 import { runBattle } from "@code-royale/engine";
+
+const { levels, strategies } = contentFor("en");
 
 const STRATEGIES: Record<string, string> = {
   // What a kid gets at the start.
@@ -83,7 +85,7 @@ if (me.type == "scout") {
 };
 
 const only = process.argv[2];
-for (const level of LEVELS) {
+for (const level of levels) {
   if (only && level.id !== only) continue;
   console.log(`\n=== ${level.num}. ${level.title}`);
   for (const [name, code] of Object.entries(STRATEGIES)) {
@@ -91,7 +93,7 @@ for (const level of LEVELS) {
     for (const seed of [1, 2, 3]) {
       const { result, compileError } = runBattle(toBattleSetup(level, code, seed));
       if (compileError) {
-        rows.push(`compile error ${compileError.message}`);
+        rows.push(`compile error ${JSON.stringify(compileError.message)}`);
         continue;
       }
       const r = result!;

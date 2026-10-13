@@ -1,0 +1,415 @@
+{
+  "meta": {
+    "title": "Code Royale ⚔️ Code your army!",
+    "description": "A coding game for kids: write JavaScript to command the blue army and beat the red team."
+  },
+  "header": {
+    "levelPicker": "Choose a level",
+    "totalStars": "Total stars",
+    "guide": "Guide",
+    "soundOn": "Sound on",
+    "soundOff": "Sound off",
+    "toggleSound": "Toggle sound",
+    "language": "Language"
+  },
+  "editor": {
+    "fight": "FIGHT!",
+    "fightAgain": "FIGHT AGAIN",
+    "fightShortcut": "Ctrl + Enter",
+    "locked": "🔒 Your code is locked while you debug",
+    "codeForEach": "✏️ Code for <b>each</b> blue fighter",
+    "more": "More",
+    "reset": "Start over with the starter code",
+    "resetConfirm": "Replace your code with the starter code? Your current code will be lost.",
+    "completion": {
+      "me": {
+        "detail": "your fighter",
+        "info": "The fighter running this code. Type me. to see what it can do!"
+      },
+      "find": "The first one that matches, or undefined.",
+      "filter": "A new list with only the ones that match.",
+      "some": "true if at least one matches.",
+      "forEach": "Do something with each one.",
+      "length": "How many there are.",
+      "arenaSize": "Arena size",
+      "bushes": "List of bushes to hide in (x, y, radius)",
+      "rocks": "List of rocks that block moving and seeing (x, y, radius)"
+    },
+    "valueTip": "{{name}} = "
+  },
+  "runError": {
+    "compile": "💥 Oops! Your code has a problem",
+    "crash": "💥 Oops! Your code has a problem",
+    "loop": "🌀 Your code got stuck!",
+    "runtime": "💥 Your fighters are confused!",
+    "atLine": "(line {{line}})",
+    "unitSays": "{{unit}} says: {{message}}",
+    "showLine": "Show me line {{line}}",
+    "stepThrough": "Step through it",
+    "ok": "OK"
+  },
+  "debugBlocked": {
+    "noBattle": "Press FIGHT first: the debugger replays a battle.",
+    "codeChanged": "Your code changed since this battle. Press FIGHT to debug the new code."
+  },
+  "mission": {
+    "show": "Show mission",
+    "hide": "Hide mission",
+    "learn": "Learn:",
+    "new": "New:",
+    "record_one": "🏆 Your record: {{count}} wave",
+    "record_other": "🏆 Your record: {{count}} waves",
+    "hintTooltip": "Stuck? Get a hint!",
+    "hints": "Hints",
+    "hintsTitle": "💡 Hints for “{{title}}”",
+    "hint": "Hint {{number}}",
+    "insert": "✨ Put this in my code",
+    "moreHints_one": "Show another hint ({{count}} left)",
+    "moreHints_other": "Show another hint ({{count}} left)",
+    "noMoreHints": "That's all the hints! You've got this, Commander. 💪"
+  },
+  "result": {
+    "victory": "VICTORY!",
+    "defeat": "DEFEAT",
+    "timeUp": "TIME'S UP!",
+    "waves_one": "{{count}} WAVE!",
+    "waves_other": "{{count}} WAVES!",
+    "newRecord": "🏆 New record!",
+    "time": "time",
+    "seconds": "{{count}}s",
+    "enemiesDown": "enemies down",
+    "fightersLeft": "fighters left",
+    "damage": "damage",
+    "nextLevel": "Next level",
+    "improve": "Improve my code",
+    "fix": "Fix my code",
+    "watchAgain": "Watch again",
+    "stay": "Stay & improve",
+    "spy": "Spy on Red's code",
+    "winLines": [
+      "Your code is unstoppable!",
+      "The Blue Kingdom cheers for you!",
+      "Brilliant commanding!",
+      "Nothing can stop your army!",
+      "Legendary code, Commander!"
+    ],
+    "loseLines": [
+      "Every great coder loses sometimes. Change your code and try again!",
+      "So close! What could your fighters do better?",
+      "Tip: a small change can turn the battle around.",
+      "The red team got lucky this time. Revenge?"
+    ],
+    "drawLines": ["Nobody won before the clock ran out. Can your army be faster?"]
+  },
+  "welcome": {
+    "title": "Welcome to Code Royale!",
+    "intro": "You are the Commander of the Blue Kingdom. But your fighters only listen to… <b>code</b>!",
+    "steps": [
+      {
+        "title": "Write code",
+        "text": "Your code gives orders to the BLUE army. Every fighter runs it many times per second."
+      },
+      {
+        "title": "Press FIGHT!",
+        "text": "Watch your army battle the RED team. Did your plan work?"
+      },
+      {
+        "title": "Earn stars",
+        "text": "Win to unlock new levels, new fighters and new tricks. Can you get all the stars?"
+      }
+    ],
+    "go": "Let's go, Commander! ⚔️"
+  },
+  "spy": {
+    "title": "🕵️ Red team's secret code",
+    "intro": "You sneaked into the red camp and found their battle plan! Every red fighter runs this code. Can you find a weakness?",
+    "close": "Got it!"
+  },
+  "map": {
+    "title": "🗺️ The Kingdom Map",
+    "unlock": "Win “{{title}}” to unlock",
+    "record_one": "🏆 Record: {{count}} wave",
+    "record_other": "🏆 Record: {{count}} waves"
+  },
+  "console": {
+    "title": "Console",
+    "clear": "Clear messages",
+    "clearLabel": "Clear console",
+    "toggle": "Toggle console",
+    "empty": "Messages from log(...) and errors show up here. Try adding log(me.name, me.health) to your code!",
+    "line": "line {{line}}",
+    "debugTooltip": "Step through {{unit}}'s code at this moment",
+    "debugLabel": "Debug this moment"
+  },
+  "battle": {
+    "onHold": "Battle on hold. <b>Click a blue fighter</b> to debug its code.",
+    "backToBattle": "Back to the battle",
+    "play": "Play",
+    "pause": "Pause",
+    "skip": "Skip to the end",
+    "skipLabel": "Skip",
+    "hoverHint": "Hover a fighter to see what it can see",
+    "fog": "🌫️ Fog",
+    "fogTooltip": "ON: you only see what your fighters can see, like a real commander. OFF: spectator mode, see everything (even enemies hiding in bushes).",
+    "replay": "Watch the last battle again",
+    "replayLabel": "Replay",
+    "debug": "Debug",
+    "debugTooltip": "Pause and run your code step by step, to see what your fighters think (and why!)",
+    "you": "YOU",
+    "red": "RED",
+    "count": "{{count}}× {{name}}"
+  },
+  "arena": {
+    "previewHint": "⚔️ Press FIGHT! · Dashed circles = what your fighters can see",
+    "countdown": {
+      "fight": "FIGHT!",
+      "go": "GO!"
+    }
+  },
+  "renderer": {
+    "teamBar": {
+      "blue_one": "BLUE · {{count}} fighter",
+      "blue_other": "BLUE · {{count}} fighters",
+      "red_one": "RED · {{count}} fighter",
+      "red_other": "RED · {{count}} fighters"
+    },
+    "wave": "WAVE {{number}}",
+    "waveIncoming": "Here they come!",
+    "slowMotion": "slow-mo",
+    "speed": "{{speed}}× speed",
+    "detectionRadius": "detection radius {{radius}}",
+    "unitTitle": "{{name}} the {{type}}",
+    "hidden": "(hidden)",
+    "spotted": "SPOTTED!",
+    "acts": {
+      "attack": "attacking",
+      "explore": "exploring",
+      "follow": "following",
+      "patrol": "patrolling",
+      "hide": "hiding",
+      "escape": "escaping",
+      "wait": "waiting",
+      "circle": "circling",
+      "move": "moving",
+      "idle": "no orders"
+    },
+    "pickup": {
+      "potion": "+HEALTH!",
+      "rage": "RAGE!",
+      "shield": "SHIELD!"
+    },
+    "special": "{{name}}!"
+  },
+  "debugger": {
+    "title": "Debugger",
+    "yourFighter": "your fighter",
+    "pickFighter": "Debug {{name}}'s code (or click it in the arena)",
+    "stop": "Stop debugging (then you can edit your code)",
+    "stopLabel": "Stop debugging",
+    "previousTick": "One tick earlier (1/20 s)",
+    "previousTickLabel": "Previous tick",
+    "nextTick": "One tick later (1/20 s)",
+    "nextTickLabel": "Next tick",
+    "timeLabel": "Battle time",
+    "restart": "Restart",
+    "restartTip": "Back to the first line of this tick",
+    "back": "Back",
+    "backTip": "Go back one step: time travel! (F7)",
+    "step": "Step",
+    "stepTip": "Run the yellow line and stop at the next one, even inside your functions (F11)",
+    "over": "Over",
+    "overTip": "Run the yellow line in one go, without stopping inside the functions it calls (F10)",
+    "out": "Out",
+    "outTip": "Finish the function you're in and stop right after it (Shift+F11)",
+    "continue": "Continue",
+    "continueTip": "Run until a fighter reaches a 🔴 breakpoint (F8). Click left of a line number to add one.",
+    "variables": "📦 Variables",
+    "noVariables": "No variables here yet. Variables you make with let or const show up here.",
+    "knows": "👀 What {{name}} knows this tick",
+    "order": "📣 Order so far",
+    "noOrder": "No order yet: if the code ends now, the fighter just stands there.",
+    "done": "✅ The code is done for this tick. Press Step to see the next tick.",
+    "truncated": "Only the first {{count}} steps are shown: that's a lot of work for one tick!",
+    "output": "💬 Output",
+    "noOutput": "Nothing printed yet. Try log(me.health).",
+    "replaying": "Replaying the battle…",
+    "statusDone": "✅ Done",
+    "statusCrashed": "💥 Crashed",
+    "statusCrashedOn": "💥 Crashed on <line>line {{line}}</line>",
+    "statusStep": "Step {{number}} of {{total}} · <line>line {{line}}</line>",
+    "statusStepNoLine": "Step {{number}} of {{total}}",
+    "changed": "Changed by the last step",
+    "more": "…and {{count}} more",
+    "unset": "not created yet",
+    "emptyList": "(empty)",
+    "listCount_one": "({{count}} thing)",
+    "listCount_other": "({{count}} things)",
+    "circular": "(itself, again)"
+  },
+  "guide": {
+    "title": "📖 Commander's Guide",
+    "tabs": {
+      "commands": "🗡️ Commands",
+      "fighters": "🛡️ Fighters",
+      "rules": "📜 Rules",
+      "js": "🧩 JavaScript"
+    },
+    "commandsIntro": "Your code runs for <b>each</b> of your fighters, 20 times every second. <code>me</code> is the fighter running the code right now.",
+    "insert": "Insert",
+    "redOnly": "red team only",
+    "recharge": "({{count}}s to recharge)",
+    "stats": {
+      "health": "❤️ health {{value}}",
+      "damage": "🗡️ damage {{value}}",
+      "range": "🎯 range {{value}}",
+      "speed": "👟 speed {{value}}",
+      "sight": "👁 sight {{value}}"
+    },
+    "treasures": "💎 Treasures",
+    "rules": [
+      {
+        "emoji": "⚖️",
+        "title": "A fair fight",
+        "text": "In most levels both teams have exactly the same army. The only difference is the CODE. The red team gets cleverer level after level, but it always has a weakness to find!"
+      },
+      {
+        "emoji": "🤺",
+        "title": "Fighting style",
+        "text": "Your fighters already know how to fight: once me.attack() gets them close, knights circle their target and lunge in to strike, while archers, scouts and mages keep their distance and side-step between shots. Each hit pushes the target back a little."
+      },
+      {
+        "emoji": "🎯",
+        "title": "Target rings",
+        "text": "A spinning ring under a fighter means someone is attacking it: a blue ring for your team, a red ring for theirs. ×3 means three fighters are ganging up on it!"
+      },
+      {
+        "emoji": "💭",
+        "title": "Decision icons",
+        "text": "Every time your code makes a fighter change what it does, a small icon pops up: ⚔️ attack, 🔍 explore, 👣 follow, 🌀 circle, 🌿 hide, 💨 escape, ✋ wait, 📍 move, 🔁 patrol. 💤 means it got no orders at all!"
+      },
+      {
+        "emoji": "👁",
+        "title": "Detection radius",
+        "text": "Each fighter spots enemies inside its detection radius (me.sight). Hover a fighter in the arena to see its circle. Scouts see the furthest!"
+      },
+      {
+        "emoji": "🤝",
+        "title": "Shared vision",
+        "text": "Your team shares what it sees. If ONE fighter spots an enemy, it shows up in everybody's enemies list. Enemies nobody sees are NOT in the list."
+      },
+      {
+        "emoji": "🌳",
+        "title": "Bushes",
+        "text": "Fighters in a bush are hidden: enemies only spot them from very close ({{bushDetect}}), except scouts ({{scoutBushDetect}}). Use me.hide() to go hide in the nearest bush."
+      },
+      {
+        "emoji": "💥",
+        "title": "Attacking makes noise",
+        "text": "When you attack, enemies can spot you from further away for a moment, and you're no longer hidden in your bush. Hit… then move!"
+      },
+      {
+        "emoji": "🪨",
+        "title": "Rocks",
+        "text": "Rocks block the way AND block sight. Nobody can see through a rock: hide behind one!"
+      },
+      {
+        "emoji": "❗",
+        "title": "Spotted!",
+        "text": "A yellow ! pops up when your team spots an enemy. A red ! and a 👁 above your fighter mean the ENEMY can see it (me.isSpotted is true). A ? shows where an enemy disappeared."
+      },
+      {
+        "emoji": "🌫️",
+        "title": "Fog of war",
+        "text": "The dark areas are what your team can't see. Switch the Fog off under the arena to watch like a spectator."
+      }
+    ],
+    "js": [
+      {
+        "title": "Nothing there? null!",
+        "text": "When there's nothing to find, me.nearestEnemy() gives null. if (enemy) is true only when something was found.",
+        "code": "let enemy = me.nearestEnemy()\nif (enemy) {\n  me.attack(enemy)\n} else {\n  me.explore()\n}"
+      },
+      {
+        "title": "Remember something",
+        "text": "let makes a variable: a named box to keep a value in.",
+        "code": "let enemy = me.nearestEnemy()"
+      },
+      {
+        "title": "Make a choice",
+        "text": "if runs code only when something is true. else runs when it's not.",
+        "code": "if (me.health < 50) {\n  me.say(\"Ouch!\")\n} else {\n  me.attack(me.nearestEnemy())\n}"
+      },
+      {
+        "title": "Compare things",
+        "text": "<  smaller than,  >  bigger than,  ==  equal,  !=  not equal",
+        "code": "if (me.type == \"archer\" && me.distanceTo(enemy) < 100) { ... }"
+      },
+      {
+        "title": "And / Or / Not",
+        "text": "&& means AND (both true), || means OR (one is enough), ! means NOT.",
+        "code": "if (enemy && !me.hasShield) { ... }"
+      },
+      {
+        "title": "Stop here",
+        "text": "return stops the code for this fighter right now.",
+        "code": "if (!enemy) return"
+      },
+      {
+        "title": "Search a list",
+        "text": "find gives the first match. filter gives all matches. length counts them.",
+        "code": "let mages = enemies.filter(e => e.type == \"mage\")\nlog(\"Mages:\", mages.length)"
+      },
+      {
+        "title": "Loop over a list",
+        "text": "for ... of looks at each thing in a list, one by one.",
+        "code": "for (let e of enemies) {\n  log(e.name, e.health)\n}"
+      },
+      {
+        "title": "Do some math",
+        "text": "+ - * / work like on a calculator. Math.abs, Math.min, Math.max can help too.",
+        "code": "let halfHealth = me.maxHealth / 2"
+      }
+    ]
+  },
+  "messages": {
+    "syntax": {
+      "unclosed": "Something was opened but never closed. Look for a missing \")\" or \"}\".",
+      "unexpectedToken": "Oops! Something is written in a way I don't understand here. Check for a missing ( ) { } or a typo.",
+      "unterminatedString": "A text in \"quotes\" is not closed. Add the missing quote!",
+      "unexpectedCharacter": "There's a strange character here that doesn't belong in code.",
+      "alreadyDeclared": "\"{{name}}\" already exists. Use a different name, or remove \"let\" the second time.",
+      "other": "Syntax problem: {{detail}}"
+    },
+    "runtime": {
+      "notDefined": "I don't know what \"{{name}}\" is. Is it spelled right? (Capital letters matter!)",
+      "missingProperty": "Tried to use \".{{property}}\" on something that doesn't exist (it's {{value}}). Maybe there is no enemy left? Try checking with if (thing) { ... }",
+      "notAFunction": "\"{{name}}\" is not something I can run. Check the spelling, and look in the 📖 Guide for the right name.",
+      "stackOverflow": "Your code calls itself forever! (Maximum call stack exceeded)",
+      "endlessLoop": "This loop never stops! It went round more than {{max, number}} times in a single tick.",
+      "other": "{{detail}}"
+    },
+    "debug": {
+      "reservedName": "Names starting with \"{{prefix}}\" are used by the debugger. Please pick another name.",
+      "noBreakpointHit": "No fighter reached a breakpoint before the end of the battle.",
+      "battleOver": "The battle is already over at this moment.",
+      "pickBlueFighter": "Pick one of your blue fighters to debug.",
+      "knockedOut": "{{name}} is knocked out at this moment, so its code doesn't run."
+    },
+    "warn": {
+      "blind": "👀 Your fighters are just standing there: they can't SEE any enemy! Enemies only show up inside a fighter's detection radius. Try adding: else { me.explore() }",
+      "attackPoint": "me.attack() needs a fighter (like me.nearestEnemy()), not a place. To walk somewhere use me.moveTo(x, y).",
+      "friendlyFire": "Whoa! You told a fighter to attack someone on YOUR team. I ignored that. 😅",
+      "patrolNeedsPlaces": "me.patrol() needs a list of places, like me.patrol([[200, 150], [200, 450]])",
+      "noBush": "There are no bushes in this arena to hide in! 🌳",
+      "tooManyLogs": "That's a LOT of messages! I stopped showing them after {{max}}."
+    },
+    "app": {
+      "unexpected": "Something went wrong: {{detail}}",
+      "codeStuck": "Your code got stuck! 🌀 It's probably a loop that never ends (like a while loop whose condition is always true). Check your loops and try again.",
+      "traceStuck": "Your code got stuck before this moment: probably a loop that never ends. 🌀",
+      "noFighterStanding": "None of your fighters is standing at this moment.",
+      "needBreakpoint": "Click left of a line number to put a 🔴 breakpoint there. Then Continue runs the battle until a fighter reaches it.",
+      "battleEnd": "That's the end of the battle! 🏁"
+    }
+  }
+}

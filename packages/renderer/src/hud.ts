@@ -6,7 +6,7 @@ import {
   type UnitInfo,
 } from "@code-royale/engine";
 import { TEAM_COLORS } from "./sprites";
-import { FONT, type HudInfo } from "./view";
+import { FONT, type HudInfo, type RendererText } from "./view";
 import { fmtTime, roundRect } from "./canvas";
 
 export function drawHud(
@@ -14,6 +14,7 @@ export function drawHud(
   frame: Frame | null,
   infos: ReadonlyMap<number, UnitInfo>,
   hud: HudInfo,
+  text: RendererText,
 ) {
   const totals = {
     blue: { hp: 0, max: 0, alive: 0 },
@@ -62,7 +63,7 @@ export function drawHud(
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#fff";
     ctx.textAlign = team === "blue" ? "left" : "right";
-    const label = `${team === "blue" ? "BLUE" : "RED"} · ${totals[team].alive} ${totals[team].alive === 1 ? "fighter" : "fighters"}`;
+    const label = text.teamBar(team, totals[team].alive);
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(0,0,0,0.6)";
     ctx.strokeText(label, team === "blue" ? x + 10 : x + barW - 10, y + 9.5);
@@ -73,7 +74,7 @@ export function drawHud(
   const remaining = Math.max(0, hud.timeLimit - hud.time);
   const label =
     hud.wave !== undefined
-      ? `WAVE ${hud.wave} · ${fmtTime(hud.time)}`
+      ? `${text.wave(hud.wave)} · ${fmtTime(hud.time)}`
       : fmtTime(remaining);
   ctx.font = `700 15px ${FONT}`;
   const tw = ctx.measureText(label).width + 28;
@@ -95,7 +96,7 @@ export function drawHud(
     ctx.fillStyle = "rgba(253,230,138,0.9)";
     ctx.textAlign = "center";
     ctx.fillText(
-      hud.speed < 1 ? "slow-mo" : `${hud.speed}× speed`,
+      hud.speed < 1 ? text.slowMotion : text.speed(hud.speed),
       ARENA_W / 2,
       ARENA_H - 13,
     );

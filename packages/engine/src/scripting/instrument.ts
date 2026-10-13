@@ -14,7 +14,7 @@
  *   l()                a loop goes round once more (lets the debugger stop endless loops)
  */
 import { parse, type Node } from "acorn";
-import type { CompileError } from "../protocol";
+import { message, type CompileError } from "../protocol";
 import { checkSyntax, friendlyRuntime, SCRIPT_GLOBALS, type Brain } from "./sandbox";
 
 /** Where a step is, and which variables can be seen from there. */
@@ -281,7 +281,7 @@ export function instrument(code: string): { code: string; points: StepPoint[] } 
 export function compileInstrumented(code: string): { brain?: InstrumentedBrain; points?: StepPoint[]; error?: CompileError } {
   const syntax = checkSyntax(code);
   if (syntax) return { error: syntax };
-  if (new RegExp(`\\b${HOOKS_NAME}`).test(code)) return { error: { message: `Names starting with "${HOOKS_NAME}" are used by the debugger. Please pick another name.` } };
+  if (new RegExp(`\\b${HOOKS_NAME}`).test(code)) return { error: { message: message("debug.reservedName", { prefix: HOOKS_NAME }) } };
   const { code: traced, points } = instrument(code);
   try {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval

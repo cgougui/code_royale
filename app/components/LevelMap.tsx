@@ -1,7 +1,8 @@
 import { Group, Modal, SimpleGrid, Text } from "@mantine/core";
 import { IconLock } from "@tabler/icons-react";
-import { LEVELS } from "@code-royale/content";
+import { useTranslation } from "react-i18next";
 import { isUnlocked, totalStars, type Progress } from "~/domain/progress";
+import { useContent } from "~/i18n";
 import { StarIcon } from "./Icons";
 import { levelColor } from "./MissionCard";
 
@@ -20,6 +21,8 @@ export function LevelMap({
   current,
   onPick,
 }: Props) {
+  const { t } = useTranslation();
+  const { levels } = useContent();
   return (
     <Modal
       opened={opened}
@@ -29,16 +32,16 @@ export function LevelMap({
       title={
         <Group gap="sm">
           <Text fw={700} size="xl">
-            🗺️ The Kingdom Map
+            {t("map.title")}
           </Text>
           <Text c="yellow.3" fw={600}>
-            ⭐ {totalStars(progress)} / {LEVELS.length * 3}
+            ⭐ {totalStars(progress)} / {levels.length * 3}
           </Text>
         </Group>
       }
     >
       <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} spacing="md">
-        {LEVELS.map((l) => {
+        {levels.map((l) => {
           const unlocked = isUnlocked(progress, l.id);
           const stars = progress.stars[l.id] ?? 0;
           return (
@@ -68,11 +71,11 @@ export function LevelMap({
               <Text size="sm" c="dimmed">
                 {unlocked
                   ? l.tagline
-                  : `Win “${LEVELS[l.num - 2]?.title}” to unlock`}
+                  : t("map.unlock", { title: levels[l.num - 2]?.title })}
               </Text>
               {l.endless && progress.bestWave > 0 && (
                 <Text size="xs" c="pink.3" mt={4}>
-                  🏆 Record: {progress.bestWave} waves
+                  {t("map.record", { count: progress.bestWave })}
                 </Text>
               )}
             </div>

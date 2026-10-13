@@ -126,7 +126,7 @@ export function useSpecial(w: World, u: Unit) {
     }
   }
   u.specialCd = u.stats.special.cooldown;
-  w.events.push({ k: "special", id: u.id, name: u.stats.special.name, x: u.x, y: u.y });
+  w.events.push({ k: "special", id: u.id, x: u.x, y: u.y });
 }
 
 export function damage(w: World, src: Unit | null, t: Unit, amount: number, big = false) {

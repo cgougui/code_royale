@@ -8,6 +8,7 @@ A browser game where kids write JavaScript to command an army. No backend: a sta
 | [engine.md](engine.md) | Simulation loop, systems, game rules, determinism, the script sandbox and API |
 | [content.md](content.md) | Levels, built-in strategies, difficulty design and balancing |
 | [ui.md](ui.md) | Renderer, browser runtime (worker, playback, storage) and React UI |
+| [i18n.md](i18n.md) | Languages: where text lives, how the language is chosen, adding a language |
 | [testing.md](testing.md) | Check suite, unit tests, golden replays, balance tool |
 | [decisions.md](decisions.md) | Key design decisions and why |
 
@@ -26,12 +27,13 @@ docker compose up --build   # production image, http://localhost:8080
 ```
 packages/
   engine/     @code-royale/engine    deterministic simulation + script sandbox (no DOM)
-  content/    @code-royale/content   levels, red strategies, API guide text (data)
+  content/    @code-royale/content   levels, red strategies, API guide, in every language (data)
   renderer/   @code-royale/renderer  Canvas 2D renderer + Web Audio effects (no React)
 app/
   domain/     pure progress rules, player reducer, replay/playback contracts
   runtime/    workers, watchdogs, validated browser storage
   hooks/      React session state and browser resource lifetimes
+  i18n/       i18next setup, UI catalogs (one JSON per language), translation hooks
   components/ reusable UI, editor, canvas sizing/input
   features/   game controller and page presentation
   routes/     React Router page composition
@@ -39,4 +41,4 @@ tools/        balance report, architecture checker
 docs/         this documentation
 ```
 
-Stack: TypeScript 5.9, React 19, React Router 7 (SPA mode), Mantine 9, CodeMirror 6, Vite 7, Vitest 5, acorn, nginx.
+Stack: TypeScript 5.9, React 19, React Router 7 (SPA mode), Mantine 9, CodeMirror 6, i18next, Vite 7, Vitest 5, acorn, nginx.

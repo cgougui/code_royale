@@ -34,6 +34,7 @@ const result: BattleResult = {
 };
 const job: TraceJob = {
   levelId: "training",
+  locale: "fr",
   blueCode: "",
   seed: 7,
   request: { tick: 1, unitId: 1 },
@@ -67,11 +68,12 @@ afterEach(() => {
 describe("battle worker lifecycle", () => {
   it("buffers frames, identifies the finale and terminates after completion", () => {
     const onDone = vi.fn();
-    const run = new BattleRun("training", "me.explore()", 7, { onDone });
+    const run = new BattleRun("training", "fr", "me.explore()", 7, { onDone });
     const worker = FakeWorker.instances[0];
     expect(worker.postMessage).toHaveBeenCalledWith({
       type: "run",
       levelId: "training",
+      locale: "fr",
       blueCode: "me.explore()",
       seed: 7,
     });
@@ -87,7 +89,7 @@ describe("battle worker lifecycle", () => {
 
   it("times out stuck code exactly once and cleans up the watchdog", () => {
     const onError = vi.fn();
-    const run = new BattleRun("training", "while (true) {}", 7, { onError });
+    const run = new BattleRun("training", "fr", "while (true) {}", 7, { onError });
     vi.advanceTimersByTime(2500);
     expect(run.error?.kind).toBe("loop");
     expect(onError).toHaveBeenCalledOnce();
@@ -98,7 +100,7 @@ describe("battle worker lifecycle", () => {
   it("ignores queued messages and errors after explicit cancellation", () => {
     const onInit = vi.fn(),
       onError = vi.fn();
-    const run = new BattleRun("training", "", 7, { onInit, onError });
+    const run = new BattleRun("training", "fr", "", 7, { onInit, onError });
     const worker = FakeWorker.instances[0];
     run.stop();
     run.stop();
@@ -113,7 +115,7 @@ describe("battle worker lifecycle", () => {
   });
 
   it("refreshes the watchdog when the worker is still sending frames", () => {
-    const run = new BattleRun("training", "", 7, {});
+    const run = new BattleRun("training", "fr", "", 7, {});
     vi.advanceTimersByTime(1750);
     FakeWorker.instances[0].emit({ type: "frames", frames: [frame], logs: [] });
     vi.advanceTimersByTime(1750);
@@ -125,7 +127,7 @@ describe("battle worker lifecycle", () => {
 describe("trace worker lifecycle", () => {
   it("terminates on success and removes pending timers", async () => {
     const pending = requestTrace(job);
-    const reply = { kind: "unavailable", reason: "no fighter" };
+    const reply = { kind: "unavailable", reason: { code: "debug.pickBlueFighter", params: {} } };
     FakeWorker.instances[0].emit(reply);
     await expect(pending).resolves.toEqual(reply);
     expect(FakeWorker.instances[0].terminate).toHaveBeenCalledOnce();
@@ -139,7 +141,7 @@ describe("trace worker lifecycle", () => {
       name: "AbortError",
     });
     controller.abort();
-    FakeWorker.instances[0].emit({ kind: "unavailable", reason: "late" });
+    FakeWorker.instances[0].emit({ kind: "unavailable", reason: { code: "debug.battleOver", params: {} } });
     await rejection;
     expect(FakeWorker.instances[0].terminate).toHaveBeenCalledOnce();
     expect(vi.getTimerCount()).toBe(0);

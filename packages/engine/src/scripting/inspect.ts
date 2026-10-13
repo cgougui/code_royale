@@ -23,7 +23,7 @@ export function inspect(v: unknown, depth = 0, seen = new Set<object>()): Inspec
   if (typeof v === "boolean") return { text: String(v), kind: "boolean" };
   if (typeof v === "function") return { text: `function ${v.name || ""}()`.replace(" ()", "()"), kind: "function" };
   if (typeof v !== "object") return { text: String(v), kind: "object" };
-  if (seen.has(v)) return { text: "(itself, again)", kind: "object" };
+  if (seen.has(v)) return { text: "↺", kind: "object", circular: true };
 
   const list = Array.isArray(v);
   const entries: [string, unknown][] = [];
@@ -39,21 +39,22 @@ export function inspect(v: unknown, depth = 0, seen = new Set<object>()): Inspec
   }
 
   const size = v instanceof Map || v instanceof Set ? v.size : entries.length;
-  const text = list || v instanceof Set ? listSummary(v as unknown[] | Set<unknown>) : summary(v);
-  const kind = list || v instanceof Set ? "list" : "object";
-  if (depth >= MAX_DEPTH) return { text, kind, more: size || undefined };
+  const isList = list || v instanceof Set;
+  const text = isList ? listSummary(v as unknown[] | Set<unknown>) : summary(v);
+  const kind = isList ? "list" : "object";
+  const count = isList ? { count: size } : {};
+  if (depth >= MAX_DEPTH) return { text, kind, ...count, more: size || undefined };
 
   seen.add(v);
   const shown = entries.slice(0, MAX_CHILDREN).map(([key, x]) => ({ key, value: inspect(x, depth + 1, seen) }));
   seen.delete(v);
   const more = entries.length - shown.length + getters;
-  return { text, kind, children: shown, ...(more > 0 ? { more } : {}) };
+  return { text, kind, ...count, children: shown, ...(more > 0 ? { more } : {}) };
 }
 
+/** The list itself; the UI adds how many things are in it (`Inspected.count`). */
 function listSummary(v: unknown[] | Set<unknown>): string {
-  const n = Array.isArray(v) ? v.length : v.size;
-  if (n === 0) return "[] (empty)";
-  return `${formatValue(dataOnly(Array.isArray(v) ? v : [...v]))}  (${n} ${n === 1 ? "thing" : "things"})`;
+  return formatValue(dataOnly(Array.isArray(v) ? v : [...v]));
 }
 
 function summary(v: object): string {
@@ -72,7 +73,7 @@ function dataOnly(v: unknown, depth = 0): unknown {
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(v).slice(0, 9)) {
     const d = Object.getOwnPropertyDescriptor(v, key);
-    out[key] = d && "value" in d ? dataOnly(d.value, depth + 1) : "(getter)";
+    out[key] = d && "value" in d ? dataOnly(d.value, depth + 1) : "ƒ";
   }
   return out;
 }

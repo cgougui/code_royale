@@ -11,7 +11,7 @@ import {
 } from "@code-royale/engine";
 import { sfx } from "./audio";
 import { TEAM_COLORS, drawStar } from "./sprites";
-import { FONT, VIS } from "./view";
+import { FONT, VIS, type RendererText } from "./view";
 
 interface Particle {
   x: number;
@@ -146,6 +146,7 @@ export class BattleEffects {
     infos: ReadonlyMap<number, UnitInfo>,
     playSound: boolean,
     time: number,
+    text: RendererText,
   ) {
     const t = time;
     const s = playSound;
@@ -317,12 +318,7 @@ export class BattleEffects {
       }
       case "pickup": {
         this.pickupGlow.set(e.id, { kind: e.item, t });
-        const label =
-          e.item === "potion"
-            ? "+HEALTH!"
-            : e.item === "rage"
-              ? "RAGE!"
-              : "SHIELD!";
+        const label = text.pickup[e.item];
         const color =
           e.item === "potion"
             ? "#f472b6"
@@ -345,11 +341,12 @@ export class BattleEffects {
       }
       case "special": {
         // Only name your own fighters' moves, so big fights don't turn into a wall of text.
-        if (infos.get(e.id)?.team === "blue")
+        const info = infos.get(e.id);
+        if (info?.team === "blue")
           this.floaters.push({
             x: e.x,
             y: e.y - 40,
-            text: `${e.name.toUpperCase()}!`,
+            text: text.special(info.type),
             color: "#fde047",
             size: 17,
             life: 1.1,
@@ -397,7 +394,7 @@ export class BattleEffects {
         if (s) sfx.smoke();
         break;
       case "wave":
-        this.showBanner(`WAVE ${e.n}`, "#fca5a5", "Here they come!");
+        this.showBanner(text.wave(e.n), "#fca5a5", text.waveIncoming);
         if (s) sfx.wave();
         break;
     }

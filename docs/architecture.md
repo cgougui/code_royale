@@ -17,9 +17,9 @@ graph BT
 
 | Layer | Knows about | Never knows about |
 | --- | --- | --- |
-| engine | itself, `acorn` | levels, pixels, browsers, React |
+| engine | itself, `acorn` | levels, pixels, browsers, React, languages (it speaks in message codes) |
 | content | engine types/rules | rendering, UI |
-| renderer | engine `Frame` protocol | React, levels, scripts |
+| renderer | engine `Frame` protocol | React, levels, scripts, languages (its words are injected) |
 | app | everything, via package entry points only | package internals |
 
 The engine never imports content: a level reaches the engine only as a plain `BattleSetup`,
@@ -53,14 +53,18 @@ graph BT
   domain["domain: progress rules · player reducer · replay contract · playback clock"]
   runtime["runtime: workers · storage"]
   hooks["hooks: React lifecycle · session state · animation scheduling"]
+  i18n["i18n: i18next setup · UI catalogs · translation hooks"]
   components["components: reusable views · editor · arena"]
   features["features/game: page controller · screen · battle controls"]
   routes["routes: route composition"]
   runtime --> domain
   hooks --> domain
   hooks --> runtime
+  i18n --> domain
   components --> domain
   components --> hooks
+  components --> i18n
+  features --> i18n
   features --> hooks
   features --> components
   routes --> features
@@ -71,6 +75,7 @@ graph BT
 | `app/domain` | Pure progress rules, player state transitions, read-only replay contract, playback state machine | React, storage, workers, timers, renderer, UI |
 | `app/runtime` | Worker transport, watchdogs, storage decoding and persistence | React hooks, components, page features |
 | `app/hooks` | React state and resource lifetimes; adapts domain rules to browser services | Components, page layout |
+| `app/i18n` | The i18next instance, UI catalogs, hooks turning content, messages and renderer words into the player's language | Hooks, runtime, components, page features |
 | `app/components` | Reusable UI and canvas sizing/input | Worker and storage implementations, page features |
 | `app/features/game` | Coordinates use cases; renders the game page and its controls | Direct storage or worker access |
 | `app/routes` | Composes the page feature | Game rules and browser adapters |
@@ -113,8 +118,8 @@ sequenceDiagram
   participant W as battle.worker (Web Worker)
   participant E as engine
   participant R as renderer (canvas)
-  UI->>W: run {levelId, blueCode, seed}
-  W->>E: runBattle(toBattleSetup(level, code, seed))
+  UI->>W: run {levelId, locale, blueCode, seed}
+  W->>E: runBattle(toBattleSetup(contentFor(locale).level(levelId), code, seed))
   E-->>W: onInit(unit infos)
   W-->>UI: init
   loop every 40 ticks (2 s of battle)
@@ -141,7 +146,7 @@ sequenceDiagram
 | `UnitInfo` | out, once | static per fighter: id, type, team, name, maxHp, radius |
 | `Frame` | out, per tick | `units: UnitSnap[]`, `projectiles`, `items`, `events: GameEvent[]` |
 | `GameEvent` | out | discrete happenings for effects/sound: `hit`, `death`, `swing`, `shoot`, `spotted`, `lost`, `smoke`, `wave`… |
-| `LogEntry` | out | player-facing console lines: `log()`, friendly errors (with line), warnings |
+| `LogEntry` | out | player-facing console lines: `log()` text, or a friendly error/warning as a `Message` (code + params, see [i18n.md](i18n.md)) |
 | `BattleResult` | out, once | winner, time, survivors, kills, damage, waves cleared, `said` |
 | `TraceRequest` / `TraceReply` | debugger | which tick and fighter (+ breakpoints) → a `Trace`: steps with location, depth, `Inspected` variables, order so far |
 

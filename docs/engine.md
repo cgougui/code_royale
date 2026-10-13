@@ -73,7 +73,8 @@ Unit stats and specials are in `units.ts`; global constants are in `rules.ts`.
 - `compile` uses `new Function(...SCRIPT_GLOBALS, code)`. A script can reach only those parameters:
   `me, enemies, allies, items, time, arena, team, log, distance, random`.
 - Runtime errors are caught per fighter per tick, deduplicated, mapped to a line number (engine-calibrated
-  stack parsing) and rephrased (`friendlyRuntime`).
+  stack parsing) and rephrased (`friendlyRuntime`) as a language-neutral `Message` (code + params); the app words it
+  in the player's language (see [i18n.md](i18n.md)).
 - **Security boundary:** scripts run in the host JS realm. The app therefore runs the engine inside a
   Web Worker (no DOM access, killable). The engine itself has no timeout; it can't, being synchronous.
 - Built-in (red) script errors don't reach the player. They're collected in `ScriptRunner.redErrors`,

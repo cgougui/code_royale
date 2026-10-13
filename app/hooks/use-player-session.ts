@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useReducer } from "react";
-import { levelById } from "@code-royale/content";
+import { levelById, type Locale } from "@code-royale/content";
 import type { BattleResult } from "@code-royale/engine";
 import { completeBattle } from "../domain/progress";
 import { loadProgress, saveProgress } from "../runtime/progress-store";
 import { initialSession, playerSession } from "../domain/player-session";
 
 /** React adapter for the pure player session; persistence runs only in effects. */
-export function usePlayerSession() {
-  const [state, dispatch] = useReducer(
-    playerSession,
-    undefined,
-    initialSession,
-  );
+export function usePlayerSession(locale: Locale) {
+  const [state, dispatch] = useReducer(playerSession, locale, initialSession);
 
   useEffect(() => dispatch({ type: "hydrate", progress: loadProgress() }), []);
+  useEffect(() => dispatch({ type: "set-locale", locale }), [locale]);
 
   useEffect(() => {
     if (state.loaded) saveProgress(state.progress);

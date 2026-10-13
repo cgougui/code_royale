@@ -1,0 +1,422 @@
+{
+  "meta": {
+    "title": "Code Royale ⚔️ Programme ton armée !",
+    "description": "Un jeu de programmation pour les enfants : écris du JavaScript pour commander l'armée bleue et battre l'équipe rouge."
+  },
+  "header": {
+    "levelPicker": "Choisir un niveau",
+    "totalStars": "Total d'étoiles",
+    "guide": "Guide",
+    "soundOn": "Son activé",
+    "soundOff": "Son coupé",
+    "toggleSound": "Activer ou couper le son",
+    "language": "Langue"
+  },
+  "editor": {
+    "fight": "COMBAT !",
+    "fightAgain": "NOUVEAU COMBAT",
+    "fightShortcut": "Ctrl + Entrée",
+    "locked": "🔒 Ton code est verrouillé pendant le débogage",
+    "codeForEach": "✏️ Le code de <b>chaque</b> combattant bleu",
+    "more": "Plus",
+    "reset": "Recommencer avec le code de départ",
+    "resetConfirm": "Remplacer ton code par le code de départ ? Ton code actuel sera perdu.",
+    "completion": {
+      "me": {
+        "detail": "ton combattant",
+        "info": "Le combattant qui exécute ce code. Tape me. pour voir tout ce qu'il sait faire !"
+      },
+      "find": "Le premier qui correspond, ou undefined.",
+      "filter": "Une nouvelle liste avec seulement ceux qui correspondent.",
+      "some": "true si au moins un correspond.",
+      "forEach": "Fais quelque chose avec chacun.",
+      "length": "Combien il y en a.",
+      "arenaSize": "Taille de l'arène",
+      "bushes": "Liste des buissons où se cacher (x, y, radius)",
+      "rocks": "Liste des rochers qui bloquent le passage et la vue (x, y, radius)"
+    },
+    "valueTip": "{{name}} = "
+  },
+  "runError": {
+    "compile": "💥 Oups ! Ton code a un problème",
+    "crash": "💥 Oups ! Ton code a un problème",
+    "loop": "🌀 Ton code est bloqué !",
+    "runtime": "💥 Tes combattants sont perdus !",
+    "atLine": "(ligne {{line}})",
+    "unitSays": "{{unit}} dit : {{message}}",
+    "showLine": "Montre-moi la ligne {{line}}",
+    "stepThrough": "L'exécuter pas à pas",
+    "ok": "OK"
+  },
+  "debugBlocked": {
+    "noBattle": "Appuie d'abord sur COMBAT : le débogueur rejoue une bataille.",
+    "codeChanged": "Ton code a changé depuis cette bataille. Appuie sur COMBAT pour déboguer le nouveau code."
+  },
+  "mission": {
+    "show": "Afficher la mission",
+    "hide": "Masquer la mission",
+    "learn": "À apprendre :",
+    "new": "Nouveau :",
+    "record_one": "🏆 Ton record : {{count}} vague",
+    "record_many": "🏆 Ton record : {{count}} vagues",
+    "record_other": "🏆 Ton record : {{count}} vagues",
+    "hintTooltip": "Bloqué ? Prends un indice !",
+    "hints": "Indices",
+    "hintsTitle": "💡 Indices pour « {{title}} »",
+    "hint": "Indice {{number}}",
+    "insert": "✨ Mets ça dans mon code",
+    "moreHints_one": "Voir un autre indice (encore {{count}})",
+    "moreHints_many": "Voir un autre indice (encore {{count}})",
+    "moreHints_other": "Voir un autre indice (encore {{count}})",
+    "noMoreHints": "C'étaient tous les indices ! Tu vas y arriver, Commandant. 💪"
+  },
+  "result": {
+    "victory": "VICTOIRE !",
+    "defeat": "DÉFAITE",
+    "timeUp": "TEMPS ÉCOULÉ !",
+    "waves_one": "{{count}} VAGUE !",
+    "waves_many": "{{count}} VAGUES !",
+    "waves_other": "{{count}} VAGUES !",
+    "newRecord": "🏆 Nouveau record !",
+    "time": "temps",
+    "seconds": "{{count}} s",
+    "enemiesDown": "ennemis vaincus",
+    "fightersLeft": "combattants debout",
+    "damage": "dégâts",
+    "nextLevel": "Niveau suivant",
+    "improve": "Améliorer mon code",
+    "fix": "Corriger mon code",
+    "watchAgain": "Revoir",
+    "stay": "Rester et m'améliorer",
+    "spy": "Espionner le code rouge",
+    "winLines": [
+      "Ton code est imbattable !",
+      "Le Royaume Bleu t'acclame !",
+      "Quel commandement brillant !",
+      "Rien ne peut arrêter ton armée !",
+      "Un code légendaire, Commandant !"
+    ],
+    "loseLines": [
+      "Même les meilleurs programmeurs perdent parfois. Change ton code et réessaie !",
+      "C'était tout près ! Qu'est-ce que tes combattants pourraient faire de mieux ?",
+      "Astuce : un petit changement peut renverser la bataille.",
+      "L'équipe rouge a eu de la chance cette fois. Une revanche ?"
+    ],
+    "drawLines": ["Personne n'a gagné avant la fin du temps. Ton armée peut-elle être plus rapide ?"]
+  },
+  "welcome": {
+    "title": "Bienvenue dans Code Royale !",
+    "intro": "Tu es le Commandant du Royaume Bleu. Mais tes combattants n'obéissent qu'au… <b>code</b> !",
+    "steps": [
+      {
+        "title": "Écris du code",
+        "text": "Ton code donne des ordres à l'armée BLEUE. Chaque combattant l'exécute plusieurs fois par seconde."
+      },
+      {
+        "title": "Appuie sur COMBAT !",
+        "text": "Regarde ton armée affronter l'équipe ROUGE. Ton plan a-t-il marché ?"
+      },
+      {
+        "title": "Gagne des étoiles",
+        "text": "Gagne pour débloquer de nouveaux niveaux, de nouveaux combattants et de nouvelles astuces. Arriveras-tu à avoir toutes les étoiles ?"
+      }
+    ],
+    "go": "C'est parti, Commandant ! ⚔️"
+  },
+  "spy": {
+    "title": "🕵️ Le code secret de l'équipe rouge",
+    "intro": "Tu t'es faufilé dans le camp rouge et tu as trouvé leur plan de bataille ! Chaque combattant rouge exécute ce code. Sauras-tu trouver une faiblesse ?",
+    "close": "Compris !"
+  },
+  "map": {
+    "title": "🗺️ La carte du Royaume",
+    "unlock": "Gagne « {{title}} » pour débloquer",
+    "record_one": "🏆 Record : {{count}} vague",
+    "record_many": "🏆 Record : {{count}} vagues",
+    "record_other": "🏆 Record : {{count}} vagues"
+  },
+  "console": {
+    "title": "Console",
+    "clear": "Effacer les messages",
+    "clearLabel": "Effacer la console",
+    "toggle": "Afficher ou masquer la console",
+    "empty": "Les messages de log(...) et les erreurs s'affichent ici. Essaie d'ajouter log(me.name, me.health) à ton code !",
+    "line": "ligne {{line}}",
+    "debugTooltip": "Exécuter pas à pas le code de {{unit}} à ce moment-là",
+    "debugLabel": "Déboguer ce moment"
+  },
+  "battle": {
+    "onHold": "Bataille en pause. <b>Clique sur un combattant bleu</b> pour déboguer son code.",
+    "backToBattle": "Retour à la bataille",
+    "play": "Lecture",
+    "pause": "Pause",
+    "skip": "Passer à la fin",
+    "skipLabel": "Passer",
+    "hoverHint": "Survole un combattant pour voir ce qu'il voit",
+    "fog": "🌫️ Brouillard",
+    "fogTooltip": "ACTIVÉ : tu ne vois que ce que voient tes combattants, comme un vrai commandant. DÉSACTIVÉ : mode spectateur, tu vois tout (même les ennemis cachés dans les buissons).",
+    "replay": "Revoir la dernière bataille",
+    "replayLabel": "Revoir",
+    "debug": "Déboguer",
+    "debugTooltip": "Mets en pause et exécute ton code pas à pas, pour voir ce que pensent tes combattants (et pourquoi !)",
+    "you": "TOI",
+    "red": "ROUGE",
+    "count": "{{count}}× {{name}}"
+  },
+  "arena": {
+    "previewHint": "⚔️ Appuie sur COMBAT ! · Cercles en pointillés = ce que voient tes combattants",
+    "countdown": {
+      "fight": "COMBAT !",
+      "go": "C'EST PARTI !"
+    }
+  },
+  "renderer": {
+    "teamBar": {
+      "blue_one": "BLEUS · {{count}} combattant",
+      "blue_many": "BLEUS · {{count}} combattants",
+      "blue_other": "BLEUS · {{count}} combattants",
+      "red_one": "ROUGES · {{count}} combattant",
+      "red_many": "ROUGES · {{count}} combattants",
+      "red_other": "ROUGES · {{count}} combattants"
+    },
+    "wave": "VAGUE {{number}}",
+    "waveIncoming": "Les voilà !",
+    "slowMotion": "ralenti",
+    "speed": "vitesse ×{{speed}}",
+    "detectionRadius": "rayon de détection {{radius}}",
+    "unitTitle": "{{name}}, {{type}}",
+    "hidden": "(caché)",
+    "spotted": "REPÉRÉ !",
+    "acts": {
+      "attack": "attaque",
+      "explore": "explore",
+      "follow": "suit",
+      "patrol": "patrouille",
+      "hide": "se cache",
+      "escape": "s'enfuit",
+      "wait": "attend",
+      "circle": "tourne autour de",
+      "move": "se déplace",
+      "idle": "aucun ordre"
+    },
+    "pickup": {
+      "potion": "+VIE !",
+      "rage": "RAGE !",
+      "shield": "BOUCLIER !"
+    },
+    "special": "{{name}} !"
+  },
+  "debugger": {
+    "title": "Débogueur",
+    "yourFighter": "ton combattant",
+    "pickFighter": "Déboguer le code de {{name}} (ou clique sur lui dans l'arène)",
+    "stop": "Arrêter le débogage (pour pouvoir modifier ton code)",
+    "stopLabel": "Arrêter le débogage",
+    "previousTick": "Un tick plus tôt (1/20 s)",
+    "previousTickLabel": "Tick précédent",
+    "nextTick": "Un tick plus tard (1/20 s)",
+    "nextTickLabel": "Tick suivant",
+    "timeLabel": "Temps de la bataille",
+    "restart": "Début",
+    "restartTip": "Revenir à la première ligne de ce tick",
+    "back": "Retour",
+    "backTip": "Revenir d'un pas en arrière : voyage dans le temps ! (F7)",
+    "step": "Pas",
+    "stepTip": "Exécute la ligne jaune et s'arrête à la suivante, même à l'intérieur de tes fonctions (F11)",
+    "over": "Sauter",
+    "overTip": "Exécute la ligne jaune d'un coup, sans s'arrêter dans les fonctions qu'elle appelle (F10)",
+    "out": "Sortir",
+    "outTip": "Termine la fonction où tu es et s'arrête juste après (Maj+F11)",
+    "continue": "Continuer",
+    "continueTip": "Continue jusqu'à ce qu'un combattant atteigne un 🔴 point d'arrêt (F8). Clique à gauche d'un numéro de ligne pour en ajouter un.",
+    "variables": "📦 Variables",
+    "noVariables": "Pas encore de variables ici. Les variables que tu crées avec let ou const apparaissent ici.",
+    "knows": "👀 Ce que {{name}} sait pendant ce tick",
+    "order": "📣 Ordre donné",
+    "noOrder": "Pas encore d'ordre : si le code s'arrête maintenant, le combattant reste planté là.",
+    "done": "✅ Le code a fini pour ce tick. Appuie sur Pas pour voir le tick suivant.",
+    "truncated": "Seuls les {{count}} premiers pas sont affichés : ça fait beaucoup de travail pour un seul tick !",
+    "output": "💬 Affichage",
+    "noOutput": "Rien d'affiché pour l'instant. Essaie log(me.health).",
+    "replaying": "La bataille se rejoue…",
+    "statusDone": "✅ Terminé",
+    "statusCrashed": "💥 Planté",
+    "statusCrashedOn": "💥 Planté <line>ligne {{line}}</line>",
+    "statusStep": "Pas {{number}} sur {{total}} · <line>ligne {{line}}</line>",
+    "statusStepNoLine": "Pas {{number}} sur {{total}}",
+    "changed": "Modifiée par le dernier pas",
+    "more": "…et {{count}} de plus",
+    "unset": "pas encore créée",
+    "emptyList": "(vide)",
+    "listCount_one": "({{count}} élément)",
+    "listCount_many": "({{count}} éléments)",
+    "listCount_other": "({{count}} éléments)",
+    "circular": "(lui-même, encore)"
+  },
+  "guide": {
+    "title": "📖 Le guide du Commandant",
+    "tabs": {
+      "commands": "🗡️ Commandes",
+      "fighters": "🛡️ Combattants",
+      "rules": "📜 Règles",
+      "js": "🧩 JavaScript"
+    },
+    "commandsIntro": "Ton code s'exécute pour <b>chacun</b> de tes combattants, 20 fois par seconde. <code>me</code> est le combattant qui exécute le code à ce moment-là.",
+    "insert": "Insérer",
+    "redOnly": "équipe rouge seulement",
+    "recharge": "({{count}} s pour se recharger)",
+    "stats": {
+      "health": "❤️ vie {{value}}",
+      "damage": "🗡️ dégâts {{value}}",
+      "range": "🎯 portée {{value}}",
+      "speed": "👟 vitesse {{value}}",
+      "sight": "👁 vue {{value}}"
+    },
+    "treasures": "💎 Trésors",
+    "rules": [
+      {
+        "emoji": "⚖️",
+        "title": "Un combat à armes égales",
+        "text": "Dans la plupart des niveaux, les deux équipes ont exactement la même armée. La seule différence, c'est le CODE. L'équipe rouge devient plus maligne à chaque niveau, mais elle a toujours une faiblesse à trouver !"
+      },
+      {
+        "emoji": "🤺",
+        "title": "Style de combat",
+        "text": "Tes combattants savent déjà se battre : une fois que me.attack() les a rapprochés, les chevaliers tournent autour de leur cible et se fendent pour frapper, tandis que les archers, éclaireurs et mages gardent leurs distances et esquivent entre deux tirs. Chaque coup repousse un peu la cible."
+      },
+      {
+        "emoji": "🎯",
+        "title": "Anneaux de cible",
+        "text": "Un anneau qui tourne sous un combattant veut dire que quelqu'un l'attaque : un anneau bleu pour ton équipe, un anneau rouge pour la leur. ×3 veut dire que trois combattants s'acharnent sur lui !"
+      },
+      {
+        "emoji": "💭",
+        "title": "Icônes de décision",
+        "text": "Chaque fois que ton code fait changer un combattant d'activité, une petite icône apparaît : ⚔️ attaquer, 🔍 explorer, 👣 suivre, 🌀 tourner autour, 🌿 se cacher, 💨 fuir, ✋ attendre, 📍 se déplacer, 🔁 patrouiller. 💤 veut dire qu'il n'a reçu aucun ordre !"
+      },
+      {
+        "emoji": "👁",
+        "title": "Rayon de détection",
+        "text": "Chaque combattant repère les ennemis dans son rayon de détection (me.sight). Survole un combattant dans l'arène pour voir son cercle. Ce sont les éclaireurs qui voient le plus loin !"
+      },
+      {
+        "emoji": "🤝",
+        "title": "Vision partagée",
+        "text": "Ton équipe partage ce qu'elle voit. Si UN combattant repère un ennemi, celui-ci apparaît dans la liste enemies de tout le monde. Les ennemis que personne ne voit ne sont PAS dans la liste."
+      },
+      {
+        "emoji": "🌳",
+        "title": "Buissons",
+        "text": "Les combattants dans un buisson sont cachés : les ennemis ne les repèrent que de très près ({{bushDetect}}), sauf les éclaireurs ({{scoutBushDetect}}). Utilise me.hide() pour aller te cacher dans le buisson le plus proche."
+      },
+      {
+        "emoji": "💥",
+        "title": "Attaquer fait du bruit",
+        "text": "Quand tu attaques, les ennemis peuvent te repérer de plus loin pendant un instant, et tu n'es plus caché dans ton buisson. Frappe… puis bouge !"
+      },
+      {
+        "emoji": "🪨",
+        "title": "Rochers",
+        "text": "Les rochers bloquent le passage ET la vue. Personne ne peut voir à travers un rocher : cache-toi derrière !"
+      },
+      {
+        "emoji": "❗",
+        "title": "Repéré !",
+        "text": "Un ! jaune apparaît quand ton équipe repère un ennemi. Un ! rouge et un 👁 au-dessus de ton combattant veulent dire que l'ENNEMI le voit (me.isSpotted vaut true). Un ? montre où un ennemi a disparu."
+      },
+      {
+        "emoji": "🌫️",
+        "title": "Brouillard de guerre",
+        "text": "Les zones sombres sont celles que ton équipe ne voit pas. Désactive le Brouillard sous l'arène pour regarder comme un spectateur."
+      }
+    ],
+    "js": [
+      {
+        "title": "Rien ? null !",
+        "text": "Quand il n'y a rien à trouver, me.nearestEnemy() renvoie null. if (enemy) n'est vrai que si quelque chose a été trouvé.",
+        "code": "let enemy = me.nearestEnemy()\nif (enemy) {\n  me.attack(enemy)\n} else {\n  me.explore()\n}"
+      },
+      {
+        "title": "Retenir quelque chose",
+        "text": "let crée une variable : une boîte avec un nom pour garder une valeur.",
+        "code": "let enemy = me.nearestEnemy()"
+      },
+      {
+        "title": "Faire un choix",
+        "text": "if exécute du code seulement quand quelque chose est vrai. else s'exécute quand ce n'est pas le cas.",
+        "code": "if (me.health < 50) {\n  me.say(\"Aïe !\")\n} else {\n  me.attack(me.nearestEnemy())\n}"
+      },
+      {
+        "title": "Comparer",
+        "text": "<  plus petit que,  >  plus grand que,  ==  égal,  !=  différent",
+        "code": "if (me.type == \"archer\" && me.distanceTo(enemy) < 100) { ... }"
+      },
+      {
+        "title": "Et / Ou / Non",
+        "text": "&& veut dire ET (les deux sont vrais), || veut dire OU (un seul suffit), ! veut dire NON.",
+        "code": "if (enemy && !me.hasShield) { ... }"
+      },
+      {
+        "title": "S'arrêter ici",
+        "text": "return arrête tout de suite le code pour ce combattant.",
+        "code": "if (!enemy) return"
+      },
+      {
+        "title": "Chercher dans une liste",
+        "text": "find donne le premier qui correspond. filter donne tous ceux qui correspondent. length les compte.",
+        "code": "let mages = enemies.filter(e => e.type == \"mage\")\nlog(\"Mages :\", mages.length)"
+      },
+      {
+        "title": "Parcourir une liste",
+        "text": "for ... of regarde chaque chose d'une liste, une par une.",
+        "code": "for (let e of enemies) {\n  log(e.name, e.health)\n}"
+      },
+      {
+        "title": "Faire des calculs",
+        "text": "+ - * / marchent comme sur une calculatrice. Math.abs, Math.min et Math.max peuvent aussi aider.",
+        "code": "let halfHealth = me.maxHealth / 2"
+      }
+    ]
+  },
+  "messages": {
+    "syntax": {
+      "unclosed": "Quelque chose a été ouvert mais jamais fermé. Cherche un \")\" ou un \"}\" manquant.",
+      "unexpectedToken": "Oups ! Il y a ici quelque chose d'écrit d'une façon que je ne comprends pas. Vérifie s'il manque un ( ) { } ou s'il y a une faute de frappe.",
+      "unterminatedString": "Un texte entre \"guillemets\" n'est pas fermé. Ajoute le guillemet qui manque !",
+      "unexpectedCharacter": "Il y a ici un caractère bizarre qui n'a rien à faire dans du code.",
+      "alreadyDeclared": "\"{{name}}\" existe déjà. Choisis un autre nom, ou enlève \"let\" la deuxième fois.",
+      "other": "Problème de syntaxe : {{detail}}"
+    },
+    "runtime": {
+      "notDefined": "Je ne sais pas ce qu'est \"{{name}}\". Est-ce bien écrit ? (Les majuscules comptent !)",
+      "missingProperty": "Tu as essayé d'utiliser \".{{property}}\" sur quelque chose qui n'existe pas (ça vaut {{value}}). Il ne reste peut-être plus d'ennemi ? Vérifie avec if (chose) { ... }",
+      "notAFunction": "\"{{name}}\" n'est pas quelque chose que je peux exécuter. Vérifie l'orthographe, et cherche le bon nom dans le 📖 Guide.",
+      "stackOverflow": "Ton code s'appelle lui-même à l'infini ! (Maximum call stack exceeded)",
+      "endlessLoop": "Cette boucle ne s'arrête jamais ! Elle a tourné plus de {{max, number}} fois en un seul tick.",
+      "other": "{{detail}}"
+    },
+    "debug": {
+      "reservedName": "Les noms qui commencent par \"{{prefix}}\" sont utilisés par le débogueur. Choisis un autre nom.",
+      "noBreakpointHit": "Aucun combattant n'a atteint de point d'arrêt avant la fin de la bataille.",
+      "battleOver": "La bataille est déjà terminée à ce moment-là.",
+      "pickBlueFighter": "Choisis un de tes combattants bleus à déboguer.",
+      "knockedOut": "{{name}} est K.-O. à ce moment-là, donc son code ne s'exécute pas."
+    },
+    "warn": {
+      "blind": "👀 Tes combattants restent plantés là : ils ne VOIENT aucun ennemi ! Les ennemis n'apparaissent que dans le rayon de détection d'un combattant. Essaie d'ajouter : else { me.explore() }",
+      "attackPoint": "me.attack() a besoin d'un combattant (comme me.nearestEnemy()), pas d'un endroit. Pour marcher quelque part, utilise me.moveTo(x, y).",
+      "friendlyFire": "Oh là ! Tu as dit à un combattant d'attaquer quelqu'un de TON équipe. J'ai ignoré cet ordre. 😅",
+      "patrolNeedsPlaces": "me.patrol() a besoin d'une liste d'endroits, comme me.patrol([[200, 150], [200, 450]])",
+      "noBush": "Il n'y a aucun buisson où se cacher dans cette arène ! 🌳",
+      "tooManyLogs": "Ça fait BEAUCOUP de messages ! J'ai arrêté de les afficher après {{max}}."
+    },
+    "app": {
+      "unexpected": "Quelque chose s'est mal passé : {{detail}}",
+      "codeStuck": "Ton code est bloqué ! 🌀 C'est sûrement une boucle qui ne finit jamais (comme une boucle while dont la condition est toujours vraie). Vérifie tes boucles et réessaie.",
+      "traceStuck": "Ton code s'est bloqué avant ce moment : sûrement une boucle qui ne finit jamais. 🌀",
+      "noFighterStanding": "Aucun de tes combattants n'est debout à ce moment-là.",
+      "needBreakpoint": "Clique à gauche d'un numéro de ligne pour y mettre un 🔴 point d'arrêt. Ensuite, Continuer fait avancer la bataille jusqu'à ce qu'un combattant l'atteigne.",
+      "battleEnd": "C'est la fin de la bataille ! 🏁"
+    }
+  }
+}
