@@ -1,0 +1,7 @@
+services:
+  code-royale:
+    build: .
+    image: code-royale
+    ports:
+      - "8081:80"
+    restart: unless-stopped
