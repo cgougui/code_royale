@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // No "DOM": the engine must run in Node, workers and tests. Using browser APIs here fails to compile.
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["src", "test"]
+}

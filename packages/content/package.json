@@ -1,0 +1,13 @@
+{
+  "name": "@code-royale/content",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Levels, built-in strategies and API docs. Data only.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@code-royale/engine": "*"
+  }
+}

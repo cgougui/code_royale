@@ -1,0 +1,81 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`golden replays > ambush 1`] = `
+{
+  "hash": "faf2efdb",
+  "time": 22.6,
+  "winner": "red",
+}
+`;
+
+exports[`golden replays > arrows 1`] = `
+{
+  "hash": "6f87c5f2",
+  "time": 25.1,
+  "winner": "red",
+}
+`;
+
+exports[`golden replays > fire 1`] = `
+{
+  "hash": "74daef6c",
+  "time": 18.9,
+  "winner": "red",
+}
+`;
+
+exports[`golden replays > ogre 1`] = `
+{
+  "hash": "c0a347db",
+  "time": 45.1,
+  "winner": "red",
+}
+`;
+
+exports[`golden replays > potions 1`] = `
+{
+  "hash": "f8580b5d",
+  "time": 24.7,
+  "winner": "red",
+}
+`;
+
+exports[`golden replays > royale 1`] = `
+{
+  "hash": "12bc0e03",
+  "time": 16,
+  "winner": "red",
+}
+`;
+
+exports[`golden replays > scout 1`] = `
+{
+  "hash": "5d8c7564",
+  "time": 19.3,
+  "winner": "blue",
+}
+`;
+
+exports[`golden replays > specials 1`] = `
+{
+  "hash": "afa8a5ca",
+  "time": 19.5,
+  "winner": "red",
+}
+`;
+
+exports[`golden replays > together 1`] = `
+{
+  "hash": "904b2de7",
+  "time": 23.5,
+  "winner": "red",
+}
+`;
+
+exports[`golden replays > training 1`] = `
+{
+  "hash": "5948f330",
+  "time": 29.9,
+  "winner": "blue",
+}
+`;

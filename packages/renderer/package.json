@@ -1,0 +1,13 @@
+{
+  "name": "@code-royale/renderer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Canvas renderer and sound effects for engine frames. No React.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@code-royale/engine": "*"
+  }
+}

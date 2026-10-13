@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Content is pure data: no DOM either.
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["src", "test"]
+}
