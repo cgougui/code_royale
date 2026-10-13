@@ -1,10 +1,15 @@
 # ---- Build the static single-page app ----
 FROM node:22-alpine AS build
 WORKDIR /app
+# Workspace manifests first, so dependency installs are cached across code changes.
 COPY package.json package-lock.json ./
+COPY packages/engine/package.json packages/engine/
+COPY packages/content/package.json packages/content/
+COPY packages/renderer/package.json packages/renderer/
 RUN npm ci
 COPY . .
-RUN npm run build
+# Refuse to ship if the engine, the architecture rules or the golden replays are broken.
+RUN npm run check && npm run build
 
 # ---- Serve it with nginx ----
 FROM nginx:1.27-alpine

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
-import { UNIT_STATS } from "~/game/constants";
-import { drawUnit } from "~/game/render/sprites";
-import type { Team, UnitType } from "~/game/types";
+import { UNIT_STATS, type Team, type UnitType } from "@code-royale/engine";
+import { drawUnit } from "@code-royale/renderer";
 
 export function StarIcon({ on, size = 20, className }: { on: boolean; size?: number; className?: string }) {
   return (

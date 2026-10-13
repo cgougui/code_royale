@@ -1,7 +1,7 @@
 import { Group, Modal, SimpleGrid, Text } from "@mantine/core";
 import { IconLock } from "@tabler/icons-react";
-import { LEVELS } from "~/game/levels";
-import { isUnlocked, totalStars, type Progress } from "~/game/progress";
+import { LEVELS } from "@code-royale/content";
+import { isUnlocked, totalStars, type Progress } from "~/domain/progress";
 import { StarIcon } from "./Icons";
 import { levelColor } from "./MissionCard";
 
@@ -13,7 +13,13 @@ interface Props {
   onPick: (id: string) => void;
 }
 
-export function LevelMap({ opened, onClose, progress, current, onPick }: Props) {
+export function LevelMap({
+  opened,
+  onClose,
+  progress,
+  current,
+  onPick,
+}: Props) {
   return (
     <Modal
       opened={opened}
@@ -44,7 +50,10 @@ export function LevelMap({ opened, onClose, progress, current, onPick }: Props) 
               aria-disabled={!unlocked}
             >
               <Group justify="space-between" mb={8} wrap="nowrap">
-                <div className="cr-level-num" style={{ background: levelColor(l) }}>
+                <div
+                  className="cr-level-num"
+                  style={{ background: levelColor(l) }}
+                >
                   {unlocked ? l.num : <IconLock size={18} />}
                 </div>
                 <Group gap={2}>
@@ -57,7 +66,9 @@ export function LevelMap({ opened, onClose, progress, current, onPick }: Props) 
                 {l.title}
               </Text>
               <Text size="sm" c="dimmed">
-                {unlocked ? l.tagline : `Win “${LEVELS[l.num - 2]?.title}” to unlock`}
+                {unlocked
+                  ? l.tagline
+                  : `Win “${LEVELS[l.num - 2]?.title}” to unlock`}
               </Text>
               {l.endless && progress.bestWave > 0 && (
                 <Text size="xs" c="pink.3" mt={4}>

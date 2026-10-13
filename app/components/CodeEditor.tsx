@@ -2,17 +2,23 @@ import { autocompletion, snippetCompletion, type Completion, type CompletionCont
 import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { forceLinting, linter, lintGutter, type Diagnostic } from "@codemirror/lint";
-import { Prec } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
+import { Compartment, EditorState, Prec, RangeSet, StateEffect, StateField, type Extension } from "@codemirror/state";
+import { Decoration, EditorView, gutter, GutterMarker, hoverTooltip, keymap, type DecorationSet } from "@codemirror/view";
 import { tags as t } from "@lezer/highlight";
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
-import { GLOBAL_DOCS, ME_DOCS, UNIT_DOCS, type ApiDoc } from "~/game/api-docs";
-import { checkSyntax } from "~/game/script";
+import { GLOBAL_DOCS, ME_DOCS, UNIT_DOCS, type ApiDoc } from "@code-royale/content";
+import { checkSyntax, type TraceStep, type TraceVar } from "@code-royale/engine";
 
 export interface CodeEditorHandle {
   insert: (code: string) => void;
   goToLine: (line: number) => void;
+}
+
+/** What the debugger is showing: the current step, and the variables to show on hover. */
+export interface EditorDebugInfo {
+  step: TraceStep | null;
+  vars: TraceVar[];
 }
 
 interface Props {
@@ -20,6 +26,169 @@ interface Props {
   onChange: (v: string) => void;
   onRun: () => void;
   runtimeError: { line?: number; message: string } | null;
+  /** Set while debugging: the code is locked and the current step is highlighted. */
+  debug?: EditorDebugInfo | null;
+  onBreakpointsChange?: (lines: number[]) => void;
+}
+
+// ---- debugger: breakpoints, current step, values on hover
+
+class BreakpointMarker extends GutterMarker {
+  elementClass = "cm-bp-on";
+  toDOM() {
+    const dot = document.createElement("span");
+    dot.className = "cm-bp-dot";
+    return dot;
+  }
+}
+class StepMarker extends GutterMarker {
+  constructor(readonly error: boolean) {
+    super();
+  }
+  eq(o: StepMarker) {
+    return o.error === this.error;
+  }
+  toDOM() {
+    const arrow = document.createElement("span");
+    arrow.className = `cm-step-arrow${this.error ? " error" : ""}`;
+    arrow.textContent = this.error ? "💥" : "➜";
+    return arrow;
+  }
+}
+const breakpointMarker = new BreakpointMarker();
+/** An invisible marker that gives the gutter its width. */
+const spacer = new (class extends GutterMarker {
+  toDOM() {
+    const s = document.createElement("span");
+    s.className = "cm-bp-dot";
+    s.style.visibility = "hidden";
+    return s;
+  }
+})();
+
+const toggleBreakpointEffect = StateEffect.define<{ pos: number; on: boolean }>({
+  map: (v, m) => ({ pos: m.mapPos(v.pos), on: v.on }),
+});
+
+/** Breakpoints live in the editor state so they follow the lines when the code is edited. */
+const breakpoints = StateField.define<RangeSet<GutterMarker>>({
+  create: () => RangeSet.empty,
+  update(set, tr) {
+    set = set.map(tr.changes);
+    for (const e of tr.effects) {
+      if (!e.is(toggleBreakpointEffect)) continue;
+      const line = tr.state.doc.lineAt(e.value.pos);
+      set = set.update({ filter: (from) => from < line.from || from > line.to });
+      if (e.value.on) set = set.update({ add: [breakpointMarker.range(line.from)] });
+    }
+    return set;
+  },
+});
+
+function hasBreakpoint(state: EditorState, line: { from: number; to: number }) {
+  let found = false;
+  state.field(breakpoints).between(line.from, line.to, () => {
+    found = true;
+  });
+  return found;
+}
+
+function toggleBreakpoint(view: EditorView, pos: number) {
+  const line = view.state.doc.lineAt(pos);
+  view.dispatch({ effects: toggleBreakpointEffect.of({ pos: line.from, on: !hasBreakpoint(view.state, line) }) });
+}
+
+function breakpointLines(state: EditorState): number[] {
+  const lines = new Set<number>();
+  for (let it = state.field(breakpoints).iter(); it.value; it.next()) lines.add(state.doc.lineAt(it.from).number);
+  return [...lines].sort((a, b) => a - b);
+}
+
+const setStepEffect = StateEffect.define<TraceStep | null>();
+
+/** Highlights the statement about to run (or the line that crashed). */
+const currentStep = StateField.define<{ deco: DecorationSet; arrow: RangeSet<GutterMarker> }>({
+  create: () => ({ deco: Decoration.none, arrow: RangeSet.empty }),
+  update(v, tr) {
+    let next = { deco: v.deco.map(tr.changes), arrow: v.arrow.map(tr.changes) };
+    for (const e of tr.effects) {
+      if (!e.is(setStepEffect)) continue;
+      const step = e.value;
+      const doc = tr.state.doc;
+      if (!step?.line || step.line > doc.lines) {
+        next = { deco: Decoration.none, arrow: RangeSet.empty };
+        continue;
+      }
+      const error = step.kind === "error";
+      const line = doc.line(step.line);
+      const ranges = [Decoration.line({ class: error ? "cm-step-line error" : "cm-step-line" }).range(line.from)];
+      if (step.col !== undefined && step.endLine && step.endLine <= doc.lines) {
+        const from = Math.min(line.to, line.from + step.col);
+        const end = doc.line(step.endLine);
+        const to = Math.min(end.to, end.from + (step.endCol ?? 0));
+        if (to > from) ranges.push(Decoration.mark({ class: "cm-step-range" }).range(from, to));
+      }
+      next = { deco: Decoration.set(ranges, true), arrow: RangeSet.of([new StepMarker(error).range(line.from)]) };
+    }
+    return next;
+  },
+  provide: (f) => EditorView.decorations.from(f, (v) => v.deco),
+});
+
+function debuggerExtensions(vars: () => TraceVar[] | null): Extension[] {
+  return [
+    breakpoints,
+    currentStep,
+    gutter({
+      class: "cm-bp-gutter",
+      markers: (v) => [v.state.field(breakpoints), v.state.field(currentStep).arrow],
+      initialSpacer: () => spacer,
+      renderEmptyElements: true,
+      domEventHandlers: {
+        mousedown(view, line) {
+          toggleBreakpoint(view, line.from);
+          return true;
+        },
+      },
+    }),
+    keymap.of([
+      {
+        key: "F9",
+        run: (view) => {
+          toggleBreakpoint(view, view.state.selection.main.head);
+          return true;
+        },
+      },
+    ]),
+    hoverTooltip((view, pos) => {
+      const list = vars();
+      const word = list && view.state.wordAt(pos);
+      if (!list || !word) return null;
+      const name = view.state.sliceDoc(word.from, word.to);
+      // `me.health`, `enemy.x`...: look inside the variable before the dot.
+      const owner = /(\w+)\.$/.exec(view.state.sliceDoc(Math.max(0, word.from - 40), word.from))?.[1];
+      const value = owner
+        ? list.find((v) => v.name === owner)?.value.children?.find((c) => c.key === name)?.value
+        : list.find((v) => v.name === name)?.value;
+      if (!value) return null;
+      return {
+        pos: word.from,
+        end: word.to,
+        above: true,
+        create() {
+          const dom = document.createElement("div");
+          dom.className = "cm-var-tip";
+          const label = document.createElement("b");
+          label.textContent = `${owner ? `${owner}.` : ""}${name} = `;
+          const text = document.createElement("span");
+          text.className = `cm-var-tip-${value.kind}`;
+          text.textContent = value.text;
+          dom.append(label, text);
+          return { dom };
+        },
+      };
+    }),
+  ];
 }
 
 const ARRAY_DOCS: Completion[] = [
@@ -29,7 +198,11 @@ const ARRAY_DOCS: Completion[] = [
   { label: "forEach", type: "method", detail: "list.forEach(x => ...)", info: "Do something with each one." },
   { label: "length", type: "property", detail: "list.length", info: "How many there are." },
 ];
-const ARENA_DOCS: Completion[] = ["width", "height", "centerX", "centerY"].map((label) => ({ label, type: "property", info: "Arena size" }));
+const ARENA_DOCS: Completion[] = [
+  ...["width", "height", "centerX", "centerY"].map((label) => ({ label, type: "property", info: "Arena size" })),
+  { label: "bushes", type: "property", info: "List of bushes to hide in (x, y, radius)" },
+  { label: "rocks", type: "property", info: "List of rocks that block moving and seeing (x, y, radius)" },
+];
 
 function toCompletion(d: ApiDoc, boost = 0): Completion {
   const base = { label: d.name, detail: d.usage, info: d.description, boost };
@@ -102,12 +275,17 @@ const royaleHighlight = HighlightStyle.define([
   { tag: [t.paren, t.brace, t.squareBracket], color: "#a5b4fc" },
 ]);
 
-export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEditor({ value, onChange, onRun, runtimeError }, ref) {
+export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEditor({ value, onChange, onRun, runtimeError, debug, onBreakpointsChange }, ref) {
   const cm = useRef<ReactCodeMirrorRef>(null);
   const runRef = useRef(onRun);
   runRef.current = onRun;
   const errRef = useRef(runtimeError);
   errRef.current = runtimeError;
+  const varsRef = useRef<TraceVar[] | null>(null);
+  varsRef.current = debug?.vars ?? null;
+  const bpRef = useRef(onBreakpointsChange);
+  bpRef.current = onBreakpointsChange;
+  const readOnly = useMemo(() => new Compartment(), []);
 
   useImperativeHandle(ref, () => ({
     insert(code: string) {
@@ -175,9 +353,28 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
         ]),
       ),
       EditorView.lineWrapping,
+      debuggerExtensions(() => varsRef.current),
+      readOnly.of(EditorState.readOnly.of(false)),
+      EditorView.updateListener.of((u) => {
+        if (u.startState.field(breakpoints) !== u.state.field(breakpoints)) bpRef.current?.(breakpointLines(u.state));
+      }),
     ],
-    [],
+    [readOnly],
   );
+
+  // Debugging: lock the code and follow the current step.
+  const debugging = !!debug;
+  useEffect(() => {
+    cm.current?.view?.dispatch({ effects: readOnly.reconfigure(EditorState.readOnly.of(debugging)) });
+  }, [debugging, readOnly]);
+  const step = debug?.step ?? null;
+  useEffect(() => {
+    const view = cm.current?.view;
+    if (!view) return;
+    const effects: StateEffect<unknown>[] = [setStepEffect.of(step)];
+    if (step?.line && step.line <= view.state.doc.lines) effects.push(EditorView.scrollIntoView(view.state.doc.line(step.line).from, { y: "nearest", yMargin: 40 }));
+    view.dispatch({ effects });
+  }, [step]);
 
   useEffect(() => {
     const view = cm.current?.view;

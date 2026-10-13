@@ -6,10 +6,16 @@
     "dev": "react-router dev",
     "build": "react-router build",
     "preview": "vite preview --outDir build/client",
-    "typecheck": "react-router typegen && tsc",
-    "balance": "tsx scripts/balance.ts"
+    "typecheck": "react-router typegen && tsc -p packages/engine && tsc -p packages/content && tsc -p packages/renderer && tsc -p app/domain && tsc",
+    "check:arch": "node tools/check-architecture.mjs",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run check:arch && npm test",
+    "balance": "tsx tools/balance.ts"
   },
   "dependencies": {
+    "@code-royale/content": "*",
+    "@code-royale/engine": "*",
+    "@code-royale/renderer": "*",
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/lang-javascript": "^6.2.5",
     "@codemirror/language": "^6.11.0",
@@ -24,7 +30,6 @@
     "@react-router/node": "~7.18.4",
     "@tabler/icons-react": "^3.49.0",
     "@uiw/react-codemirror": "^4.25.12",
-    "acorn": "^8.19.0",
     "isbot": "^5.2.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -38,6 +43,10 @@
     "tsx": "^4.23.0",
     "typescript": "~5.9.3",
     "vite": "^7.3.7",
-    "vite-tsconfig-paths": "^5.1.4"
-  }
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^5.0.4"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

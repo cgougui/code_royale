@@ -1,5 +1,5 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
-import type { Level } from "~/game/levels";
+import type { Level } from "@code-royale/content";
 import { CrownLogo } from "./Icons";
 
 export function WelcomeModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
@@ -48,7 +48,7 @@ export function SpyModal({ opened, onClose, level }: { opened: boolean; onClose:
         You sneaked into the red camp and found their battle plan! Every red fighter runs this code. Can you find a weakness?
       </Text>
       <pre className="cr-snippet" style={{ maxHeight: "55vh", overflow: "auto", fontSize: 13 }}>
-        {level.redCode}
+        {level.redStrategy.code}
       </pre>
       <Group justify="flex-end" mt="md">
         <Button onClick={onClose}>Got it!</Button>

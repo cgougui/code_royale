@@ -1,7 +1,7 @@
 import { ActionIcon, Badge, Button, Collapse, Group, Modal, Stack, Text, Tooltip } from "@mantine/core";
 import { IconBulb, IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import type { Level } from "~/game/levels";
+import type { Level } from "@code-royale/content";
 import { StarIcon } from "./Icons";
 
 interface Props {
@@ -57,6 +57,18 @@ export function MissionCard({ level, stars, bestWave, onInsert }: Props) {
           <Text size="sm" lh={1.45} c="violet.2">
             🧠 <b>Learn:</b> {level.learn}
           </Text>
+          {level.newApi.length > 0 && (
+            <Group gap={6}>
+              <Text size="xs" c="dimmed">
+                New:
+              </Text>
+              {level.newApi.map((api) => (
+                <code key={api} className="cr-doc-usage" style={{ fontSize: 12 }}>
+                  {api}
+                </code>
+              ))}
+            </Group>
+          )}
           <Group gap={6} align="flex-start">
             <Stack gap={3} style={{ flex: 1 }}>
               {level.stars.map((s, i) => (

@@ -1,9 +1,9 @@
 import { Button, Group, Stack, Text } from "@mantine/core";
 import { IconArrowRight, IconCode, IconEye, IconRefresh } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
-import { sfx } from "~/game/audio";
-import type { Level } from "~/game/levels";
-import type { BattleResult } from "~/game/types";
+import type { Level } from "@code-royale/content";
+import type { BattleResult } from "@code-royale/engine";
+import { sfx } from "@code-royale/renderer";
 import { StarIcon } from "./Icons";
 
 interface Props {
@@ -79,7 +79,6 @@ export function ResultOverlay({ level, result, earned, newRecord, hasNext, muted
           <Stat label="enemies down" value={`${result.redKilled}`} />
           <Stat label="fighters left" value={`${result.blueAlive}/${result.blueTotal}`} />
           <Stat label="damage" value={`${result.damageDealt}`} />
-          {result.healingDone > 0 && <Stat label="healing" value={`${result.healingDone}`} />}
         </Group>
         <Text size="sm" c="gray.3" mb={14}>
           {line}

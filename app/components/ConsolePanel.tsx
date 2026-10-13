@@ -1,14 +1,15 @@
 import { ActionIcon, Badge, Tooltip } from "@mantine/core";
-import { IconChevronDown, IconChevronUp, IconTerminal2, IconTrash } from "@tabler/icons-react";
+import { IconBug, IconChevronDown, IconChevronUp, IconTerminal2, IconTrash } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import { TICKS_PER_SECOND } from "~/game/constants";
-import type { LogEntry } from "~/game/types";
+import { TICKS_PER_SECOND, type LogEntry } from "@code-royale/engine";
 
 interface Props {
   logs: LogEntry[];
   visibleTick: number;
   onClear: () => void;
   onGoToLine: (line: number) => void;
+  /** Debug the moment a message was printed (not given when the debugger can't run). */
+  onDebug?: (entry: LogEntry) => void;
 }
 
 const ICON: Record<LogEntry["kind"], string> = { log: "💬", error: "💥", warn: "⚠️", info: "ℹ️" };
@@ -18,7 +19,7 @@ function fmt(tick: number) {
   return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
 }
 
-export function ConsolePanel({ logs, visibleTick, onClear, onGoToLine }: Props) {
+export function ConsolePanel({ logs, visibleTick, onClear, onGoToLine, onDebug }: Props) {
   const [open, setOpen] = useState(true);
   const body = useRef<HTMLDivElement>(null);
   // Messages appear in sync with the battle replay (errors show up right away).
@@ -76,6 +77,13 @@ export function ConsolePanel({ logs, visibleTick, onClear, onGoToLine }: Props) 
                 <span className="cr-log-line" onClick={() => onGoToLine(l.line!)}>
                   line {l.line}
                 </span>
+              )}
+              {onDebug && l.tick >= 0 && l.unit && (
+                <Tooltip label={`Step through ${l.unit}'s code at this moment`} withArrow>
+                  <ActionIcon className="cr-log-debug" size="xs" variant="subtle" color="yellow" onClick={() => onDebug(l)} aria-label="Debug this moment">
+                    <IconBug size={13} />
+                  </ActionIcon>
+                </Tooltip>
               )}
             </div>
           ))}

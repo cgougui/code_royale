@@ -81,7 +81,7 @@ class Sfx {
     else if (kind === "powershot") {
       this.tone(900, 0.25, { to: 200, type: "sawtooth", vol: 0.15 });
       this.hiss(0.25, { freq: 3000, to: 800, vol: 0.3 });
-    } else if (kind === "bolt") this.tone(1200, 0.12, { to: 1800, type: "triangle", vol: 0.12 });
+    } else if (kind === "knife") this.hiss(0.08, { freq: 4000, to: 2000, q: 4, vol: 0.2 });
     else this.tone(1400, 0.1, { to: 500, type: "triangle", vol: 0.15 });
   }
   hit(big?: boolean) {
@@ -109,6 +109,15 @@ class Sfx {
     const big = kind === "meteor" || kind === "stomp";
     this.tone(big ? 70 : 120, big ? 0.6 : 0.3, { to: 30, type: "sine", vol: 0.5 });
     this.hiss(big ? 0.7 : 0.35, { freq: 1200, to: 100, type: "lowpass", vol: big ? 0.6 : 0.35 });
+  }
+  /** The classic "!" when someone gets spotted. */
+  spotted(byBlue: boolean) {
+    if (!this.gate("spotted", 150)) return;
+    this.tone(byBlue ? 988 : 523, 0.08, { type: "square", vol: 0.08 });
+    this.tone(byBlue ? 1319 : 392, 0.12, { type: "square", vol: 0.08, delay: 0.07 });
+  }
+  smoke() {
+    this.hiss(0.5, { freq: 800, to: 200, type: "lowpass", vol: 0.35 });
   }
   warn() {
     this.tone(300, 0.6, { to: 900, type: "sawtooth", vol: 0.05 });

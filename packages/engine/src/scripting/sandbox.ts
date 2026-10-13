@@ -1,4 +1,13 @@
+/**
+ * Script sandbox: syntax checking (acorn), compilation with `new Function`,
+ * error line mapping and kid-friendly error messages.
+ *
+ * Isolation note: compiled scripts can only reach the globals passed as parameters.
+ * They still run in the host JS realm, so the app runs battles in a Web Worker
+ * (no DOM, killable on infinite loops).
+ */
 import { parse } from "acorn";
+import type { CompileError } from "../protocol";
 
 /** Names of the variables a player's script can use directly. */
 export const SCRIPT_GLOBALS = [
@@ -15,12 +24,6 @@ export const SCRIPT_GLOBALS = [
 ] as const;
 
 export type Brain = (...args: unknown[]) => unknown;
-
-export interface CompileError {
-  message: string;
-  line?: number;
-  col?: number;
-}
 
 /** Checks the syntax of a player's script. Returns null when the code is fine. */
 export function checkSyntax(code: string): CompileError | null {
@@ -96,30 +99,4 @@ export function friendlyRuntime(msg: string): string {
   if (m) return `"${m[1]}" is not something I can run. Check the spelling, and look in the 📖 Guide for the right name.`;
   if (/Maximum call stack/i.test(msg)) return `Your code calls itself forever! (Maximum call stack exceeded)`;
   return msg;
-}
-
-/** Formats values passed to log() so they read nicely in the console. */
-export function formatValue(v: unknown, depth = 0): string {
-  if (v === null) return "null";
-  if (v === undefined) return "undefined";
-  if (typeof v === "string") return depth === 0 ? v : JSON.stringify(v);
-  if (typeof v === "number") return Number.isInteger(v) ? String(v) : v.toFixed(1);
-  if (typeof v === "boolean") return String(v);
-  if (typeof v === "function") return "[function]";
-  if (Array.isArray(v)) {
-    if (depth > 1) return `[${v.length} things]`;
-    const parts = v.slice(0, 6).map((x) => formatValue(x, depth + 1));
-    return `[${parts.join(", ")}${v.length > 6 ? `, …${v.length - 6} more` : ""}]`;
-  }
-  if (typeof v === "object") {
-    const o = v as Record<string, unknown>;
-    if (typeof o.type === "string" && typeof o.health === "number") {
-      return `${o.team === "red" ? "🔴" : "🔵"} ${o.type} ${o.name ?? ""} (${Math.ceil(o.health as number)}❤️)`;
-    }
-    if (typeof o.kind === "string" && typeof o.x === "number") return `💎 ${o.kind} at (${Math.round(o.x)}, ${Math.round(o.y as number)})`;
-    if (depth > 1) return "{…}";
-    const keys = Object.keys(o).slice(0, 8);
-    return `{ ${keys.map((k) => `${k}: ${formatValue(o[k], depth + 1)}`).join(", ")} }`;
-  }
-  return String(v);
 }

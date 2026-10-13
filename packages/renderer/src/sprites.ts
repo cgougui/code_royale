@@ -1,4 +1,5 @@
-import type { ItemKind, ProjectileKind, Team, UnitType } from "../types";
+/** Procedural sprites: fighters, projectiles and items drawn with Canvas 2D (no image assets). */
+import type { ItemKind, ProjectileKind, Team, UnitType } from "@code-royale/engine";
 
 export const TEAM_COLORS: Record<Team, { base: string; light: string; dark: string; glow: string }> = {
   blue: { base: "#3b82f6", light: "#93c5fd", dark: "#1e3a8a", glow: "rgba(96,165,250,0.6)" },
@@ -242,25 +243,37 @@ function drawHead(ctx: Ctx, p: UnitPose, r: number, c: (typeof TEAM_COLORS)[Team
       ctx.fill();
       break;
     }
-    case "healer": {
-      // White hood with a golden rim.
-      ctx.fillStyle = "#f8fafc";
-      ctx.strokeStyle = "#eab308";
-      ctx.lineWidth = Math.max(1.5, r * 0.12);
+    case "scout": {
+      // Team-coloured scarf flapping behind.
+      const flap = Math.sin(p.time * 12 + p.seed) * r * 0.15;
+      ctx.fillStyle = c.light;
       ctx.beginPath();
-      ctx.arc(0, 0, r * 1.02, Math.PI * 1.05, Math.PI * 1.95);
-      ctx.quadraticCurveTo(0, -r * 0.45, -r * 0.98, -r * 0.3);
+      ctx.moveTo(-r * 0.6, r * 0.35);
+      ctx.quadraticCurveTo(-r * 1.4, r * 0.3 + flap, -r * 1.8, r * 0.55 + flap);
+      ctx.lineTo(-r * 1.5, r * 0.75 + flap);
+      ctx.quadraticCurveTo(-r * 1.1, r * 0.6, -r * 0.55, r * 0.6);
+      ctx.fill();
+      // Leather cap.
+      ctx.fillStyle = "#92400e";
+      ctx.strokeStyle = "#451a03";
+      ctx.lineWidth = Math.max(1.5, r * 0.1);
+      ctx.beginPath();
+      ctx.arc(0, -r * 0.05, r * 1.0, Math.PI * 1.08, Math.PI * 1.92);
+      ctx.quadraticCurveTo(0, -r * 0.5, -r * 0.95, -r * 0.4);
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = "#22c55e";
-      ctx.fillRect(-r * 0.08, -r * 0.92, r * 0.16, r * 0.46);
-      ctx.fillRect(-r * 0.23, -r * 0.77, r * 0.46, r * 0.16);
-      // Halo.
-      ctx.strokeStyle = `rgba(253,224,71,${0.6 + Math.sin(p.time * 4 + p.seed) * 0.25})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(0, -r * 1.3, r * 0.55, r * 0.17, 0, 0, Math.PI * 2);
-      ctx.stroke();
+      // Goggles pushed up on the forehead.
+      for (const gx of [r * 0.05, r * 0.5]) {
+        ctx.fillStyle = "#67e8f9";
+        ctx.strokeStyle = "#1c1917";
+        ctx.lineWidth = Math.max(1.5, r * 0.12);
+        circle(ctx, gx, -r * 0.62, r * 0.2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        circle(ctx, gx - r * 0.06, -r * 0.68, r * 0.06);
+        ctx.fill();
+      }
       break;
     }
     case "mage": {
@@ -402,7 +415,26 @@ function drawFrontGear(ctx: Ctx, p: UnitPose, r: number, c: (typeof TEAM_COLORS)
       ctx.restore();
       break;
     }
-    case "healer":
+    case "scout": {
+      // A throwing knife, raised when throwing.
+      ctx.save();
+      ctx.translate(hx, hy);
+      ctx.rotate(-0.6 + (p.shot >= 0 ? Math.sin(p.shot * Math.PI) * -1.4 : 0));
+      ctx.fillStyle = "#e2e8f0";
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.1, 0);
+      ctx.lineTo(0, -r * 0.95);
+      ctx.lineTo(r * 0.1, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#78350f";
+      ctx.fillRect(-r * 0.09, 0, r * 0.18, r * 0.35);
+      ctx.restore();
+      break;
+    }
     case "mage": {
       ctx.save();
       ctx.translate(hx, hy);
@@ -414,7 +446,7 @@ function drawFrontGear(ctx: Ctx, p: UnitPose, r: number, c: (typeof TEAM_COLORS)
       ctx.moveTo(0, r * 0.7);
       ctx.lineTo(0, -r * 1.3);
       ctx.stroke();
-      const orb = p.type === "healer" ? "#fde047" : "#fb923c";
+      const orb = "#fb923c";
       const glow = ctx.createRadialGradient(0, -r * 1.45, 0, 0, -r * 1.45, r * 0.7);
       glow.addColorStop(0, orb);
       glow.addColorStop(1, "rgba(255,200,0,0)");
@@ -527,14 +559,19 @@ export function drawProjectile(ctx: Ctx, kind: ProjectileKind, team: Team, x: nu
       ctx.stroke();
       break;
     }
-    case "bolt": {
-      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 9);
-      g.addColorStop(0, "#fff");
-      g.addColorStop(0.4, "#fde047");
-      g.addColorStop(1, "rgba(253,224,71,0)");
-      ctx.fillStyle = g;
-      circle(ctx, 0, 0, 9);
+    case "knife": {
+      ctx.rotate(time * 30);
+      ctx.fillStyle = "#e2e8f0";
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-7, 0);
+      ctx.lineTo(0, -2.5);
+      ctx.lineTo(8, 0);
+      ctx.lineTo(0, 2.5);
+      ctx.closePath();
       ctx.fill();
+      ctx.stroke();
       break;
     }
     case "fireball": {
